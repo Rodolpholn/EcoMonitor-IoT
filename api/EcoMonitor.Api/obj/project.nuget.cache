@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5deGbrpvm0Y=",
+  "dgSpecHash": "pklEk5RvWS0=",
   "success": true,
   "projectFilePath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\C#\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
   "expectedPackageFiles": [
@@ -34,6 +34,8 @@
     "C:\\Users\\rodol\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\mysqlconnector\\2.4.0\\mysqlconnector.2.4.0.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\pomelo.entityframeworkcore.mysql\\9.0.0\\pomelo.entityframeworkcore.mysql.9.0.0.nupkg.sha512",
+    "C:\\Users\\rodol\\.nuget\\packages\\scalar.aspnetcore\\2.0.36\\scalar.aspnetcore.2.0.36.nupkg.sha512",
+    "C:\\Users\\rodol\\.nuget\\packages\\swashbuckle.aspnetcore\\9.0.0\\swashbuckle.aspnetcore.9.0.0.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\system.composition\\7.0.0\\system.composition.7.0.0.nupkg.sha512",

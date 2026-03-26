@@ -1,33 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using EcoMonitor.Api;
+using Scalar.AspNetCore; // <--- Importante adicionar isso
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configurar a Conexão com o Banco de Dados (MySQL)
-// Usaremos "root" e senha "root" para o seu teste local.
+// 1. Banco de Dados
 var connectionString = "server=localhost;database=ecomonitor_db;user=root;password=Tec.2023";
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// 2. Ativar os Controllers (a nossa recepção)
 builder.Services.AddControllers();
-
-// 3. Ativar o Swagger (a tela de testes que mencionei)
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(); // Nativo do .NET 9
 
 var app = builder.Build();
 
-// 4. Configurar o que a API faz ao rodar
+// 2. Interface Visual do Scalar (O novo Swagger)
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(); // Cria a página visual em /scalar/v1
 }
 
 app.UseHttpsRedirection();
-
-// 5. Ligar as rotas automáticas
 app.MapControllers();
 
 app.Run();
