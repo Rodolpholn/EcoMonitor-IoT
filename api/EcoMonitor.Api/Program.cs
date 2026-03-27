@@ -5,7 +5,7 @@ using Scalar.AspNetCore; // <--- Importante adicionar isso
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Banco de Dados
-var connectionString = "server=localhost;database=ecomonitor_db;user=root;password=Tec.2023";
+var connectionString = "server=localhost;database=ecomonitor_db;user=root;password=";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 

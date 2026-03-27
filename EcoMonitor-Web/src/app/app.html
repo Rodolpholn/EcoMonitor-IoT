@@ -4,7 +4,24 @@
       <h1 class="text-primary mb-4">
         <i class="bi bi-thermometer-half"></i> EcoMonitor - Dashboard
       </h1>
+    </div>
+  </div>
 
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card shadow">
+        <div class="card-body">
+          <h5 class="card-title text-secondary">
+            <i class="bi bi-graph-up text-primary"></i> Histórico de Temperatura
+          </h5>
+          <canvas #graficoTemp style="max-height: 350px"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
       <div class="card shadow">
         <div class="card-header bg-dark text-white">
           <h5 class="mb-0">Últimas Leituras do Sensor</h5>
@@ -20,16 +37,26 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of leituras">
-                <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
-                <td>{{ item.temperatura }}°C</td>
-                <td>{{ item.umidade }}%</td>
-                <td>
-                  <span class="badge" [ngClass]="item.ledLigado ? 'bg-success' : 'bg-danger'">
-                    {{ item.ledLigado ? 'Ligado' : 'Desligado' }}
-                  </span>
-                </td>
-              </tr>
+              @for (item of leituras; track item.id) {
+                <tr>
+                  <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td>{{ item.temperatura }}°C</td>
+                  <td>{{ item.umidade }}%</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.bg-success]="item.ledLigado"
+                      [class.bg-danger]="!item.ledLigado"
+                    >
+                      {{ item.ledLigado ? 'Ligado' : 'Desligado' }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center">Aguardando dados da API...</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

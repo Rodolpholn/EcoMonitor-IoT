@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "pklEk5RvWS0=",
+  "dgSpecHash": "91+zTFLqf5I=",
   "success": true,
-  "projectFilePath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\C#\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+  "projectFilePath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\rodol\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.10\\microsoft.aspnetcore.openapi.9.0.10.nupkg.sha512",

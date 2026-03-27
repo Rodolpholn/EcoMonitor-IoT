@@ -2921,11 +2921,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\C#\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+      "projectUniqueName": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
       "projectName": "EcoMonitor.Api",
-      "projectPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\C#\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+      "projectPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
       "packagesPath": "C:\\Users\\rodol\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\C#\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\obj\\",
+      "outputPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\rodol\\AppData\\Roaming\\NuGet\\NuGet.Config"
