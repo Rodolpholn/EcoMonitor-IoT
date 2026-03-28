@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+/* Importando uma fonte mais moderna */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fa; /* Cinza bem clarinho de fundo */
+  color: #334155;
+  margin: 0;
+}
+
+/* Estilo para os Cartões (Cards) igual ao da foto */
+.card {
+  border: none !important;
+  border-radius: 15px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Scrollbar personalizada para o menu lateral */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}

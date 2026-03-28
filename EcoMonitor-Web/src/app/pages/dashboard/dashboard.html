@@ -1,0 +1,69 @@
+<div class="row g-3 g-md-4 mb-5">
+  <div class="col-12">
+    <div class="card p-3 p-md-4 shadow-sm border-0" style="border-radius: 20px">
+      <h5 class="card-title text-primary fw-bold mb-3 d-flex align-items-center">
+        <i class="bi bi-graph-up me-2"></i>
+        <span class="fs-6 fs-md-5">Histórico de Temperatura</span>
+      </h5>
+
+      <div class="chart-container" style="position: relative; height: 300px; width: 100%">
+        <canvas #graficoTemp></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-sm border-0" style="border-radius: 20px">
+      <div class="card-header bg-white border-0 pt-4 px-3 px-md-4">
+        <h5 class="fw-bold fs-6 fs-md-5"><i class="bi bi-list-check me-2"></i>Leituras Recentes</h5>
+      </div>
+      <div class="card-body px-2 px-md-4">
+        <div class="table-responsive">
+          <table class="table table-hover table-borderless align-middle" style="min-width: 400px">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Data/Hora</th>
+                <th>Temp.</th>
+                <th>Umid.</th>
+                <th class="pe-3">LED</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of leituras; track item.id) {
+                <tr>
+                  <td class="text-secondary small ps-3">
+                    {{ item.dataHora | date: 'dd/MM HH:mm' }}
+                  </td>
+                  <td class="fw-bold text-dark">{{ item.temperatura }}°C</td>
+                  <td>{{ item.umidade }}%</td>
+                  <td class="pe-3">
+                    <span
+                      class="badge rounded-pill p-2"
+                      [class.bg-success-subtle]="item.ledLigado"
+                      [class.text-success]="item.ledLigado"
+                      [class.bg-danger-subtle]="!item.ledLigado"
+                      [class.text-danger]="!item.ledLigado"
+                    >
+                      <i
+                        class="bi"
+                        [class.bi-check-circle-fill]="item.ledLigado"
+                        [class.bi-x-circle-fill]="!item.ledLigado"
+                      ></i>
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                    Buscando dados...
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,66 +1,77 @@
-<div class="container mt-5">
-  <div class="row">
-    <div class="col">
-      <h1 class="text-primary mb-4">
-        <i class="bi bi-thermometer-half"></i> EcoMonitor - Dashboard
-      </h1>
+<div class="d-flex flex-column flex-md-row" id="wrapper">
+  <div
+    class="bg-primary text-white shadow d-none d-md-block"
+    id="sidebar-wrapper"
+    style="width: 250px; min-height: 100vh"
+  >
+    <div class="sidebar-heading p-4 fs-4 fw-bold border-bottom border-light">
+      <i class="bi bi-cpu-fill me-2"></i>EcoMonitor
+    </div>
+    <div class="list-group list-group-flush p-2">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active-desktop"
+        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
+      >
+        <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
+      </a>
+      <a
+        href="#"
+        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2 opacity-50"
+      >
+        <i class="bi bi-cpu-fill me-2"></i> Sensores IoT
+      </a>
+      <a
+        href="#"
+        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mt-5 text-warning"
+      >
+        <i class="bi bi-door-open-fill me-2"></i> Deslogar
+      </a>
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <div class="card shadow">
-        <div class="card-body">
-          <h5 class="card-title text-secondary">
-            <i class="bi bi-graph-up text-primary"></i> Histórico de Temperatura
-          </h5>
-          <canvas #graficoTemp style="max-height: 350px"></canvas>
-        </div>
-      </div>
-    </div>
+  <div class="navigation d-md-none">
+    <ul>
+      <li class="list" routerLinkActive="active">
+        <a routerLink="/dashboard">
+          <span class="icon"><i class="bi bi-grid-1x2-fill"></i></span>
+          <span class="text">Home</span>
+        </a>
+      </li>
+
+      <li class="list" routerLinkActive="active">
+        <a href="#">
+          <span class="icon"><i class="bi bi-cpu-fill"></i></span>
+          <span class="text">Sensores</span>
+        </a>
+      </li>
+
+      <li class="list logout-item" routerLinkActive="active">
+        <a href="#">
+          <span class="icon"><i class="bi bi-door-open-fill"></i></span>
+          <span class="text">Sair</span>
+        </a>
+      </li>
+
+      <div class="indicator"></div>
+    </ul>
   </div>
 
-  <div class="row">
-    <div class="col">
-      <div class="card shadow">
-        <div class="card-header bg-dark text-white">
-          <h5 class="mb-0">Últimas Leituras do Sensor</h5>
-        </div>
-        <div class="card-body">
-          <table class="table table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>Data/Hora</th>
-                <th>Temperatura</th>
-                <th>Umidade</th>
-                <th>Status LED</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of leituras; track item.id) {
-                <tr>
-                  <td>{{ item.dataHora | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
-                  <td>{{ item.temperatura }}°C</td>
-                  <td>{{ item.umidade }}%</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [class.bg-success]="item.ledLigado"
-                      [class.bg-danger]="!item.ledLigado"
-                    >
-                      {{ item.ledLigado ? 'Ligado' : 'Desligado' }}
-                    </span>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="text-center">Aguardando dados da API...</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+  <div id="page-content-wrapper" class="flex-grow-1 bg-light overflow-auto">
+    <nav
+      class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 d-none d-md-flex"
+    >
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1 text-secondary">Dashboard Principal</span>
+        <div class="ms-auto d-flex align-items-center">
+          <span class="me-3 fw-bold text-primary">Olá, Rodolfo</span>
+          <i class="bi bi-person-circle fs-3 text-primary"></i>
         </div>
       </div>
+    </nav>
+
+    <div class="container-fluid p-2 p-md-4">
+      <router-outlet></router-outlet>
     </div>
   </div>
 </div>
