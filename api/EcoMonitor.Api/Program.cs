@@ -28,16 +28,16 @@ var app = builder.Build();
 
 
 // 2. Interface Visual do Scalar (O novo Swagger)
-app.UseHttpsRedirection();
 app.MapOpenApi();
-app.MapScalarApiReference(ptions =>
+app.MapScalarApiReference(options => // <-- VEJA O "options =>" AQUI
 {
-    // Define o título da página e força o servidor a usar HTTPS
     options.WithTitle("EcoMonitor API")
-           .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
-}); // Cria a página visual em /scalar/v1
+           .WithTheme(ScalarTheme.Moon);
+});
+ // Cria a página visual em /scalar/v1
 app.UseCors("PermitirAngular");
 app.UseHttpsRedirection();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
