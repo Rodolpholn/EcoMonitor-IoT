@@ -28,11 +28,9 @@ var app = builder.Build();
 
 
 // 2. Interface Visual do Scalar (O novo Swagger)
-if (app.Environment.IsDevelopment())
-{
+
     app.MapOpenApi();
     app.MapScalarApiReference(); // Cria a página visual em /scalar/v1
-}
 app.UseCors("PermitirAngular");
 app.UseHttpsRedirection();
 app.MapControllers();
