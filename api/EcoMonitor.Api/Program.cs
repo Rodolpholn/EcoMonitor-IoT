@@ -26,6 +26,11 @@ builder.Services.AddOpenApi(); // Nativo do .NET 9
 
 var app = builder.Build();
 
+app.Use((context, next) =>
+{
+    context.Request.Scheme = "https";
+    return next();
+});
 
 // 2. Interface Visual do Scalar (O novo Swagger)
 app.MapOpenApi();
