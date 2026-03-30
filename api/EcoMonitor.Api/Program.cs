@@ -5,7 +5,7 @@ using Scalar.AspNetCore; // <--- Importante adicionar isso
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Banco de Dados
-var connectionString = "server=localhost;database=ecomonitor_db;user=root;password=";
+var connectionString = "postgresql://postgres:3ca!8M39Fa$%s@N@db.eznsxbjdssojayrqetry.supabase.co:5432/postgres";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.AllowAnyOrigin() // Permite qualquer site (Vercel, Celular, etc)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
