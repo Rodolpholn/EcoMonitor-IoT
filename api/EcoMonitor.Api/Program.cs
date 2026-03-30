@@ -5,9 +5,10 @@ using Scalar.AspNetCore; // <--- Importante adicionar isso
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Banco de Dados
-var connectionString = "postgresql://postgres:3ca!8M39Fa$%s@N@db.eznsxbjdssojayrqetry.supabase.co:5432/postgres";
+var connectionString = "Host=db.eznsxbjdssojayrqetry.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseNpgsql(connectionString));
 
 // 2. Configurar CORS (Liberar o Angular)
 builder.Services.AddCors(options =>
