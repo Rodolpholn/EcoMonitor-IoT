@@ -7,7 +7,8 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Banco de Dados
-var connectionString = "Host=db.eznsxbjdssojayrqetry.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true;Include Error Detail=true";
+// Use EXATAMENTE esse formato que o Supabase te passou
+var connectionString = "Host=aws-1-sa-east-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.eznsxbjdssojayrqetry;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true;";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
