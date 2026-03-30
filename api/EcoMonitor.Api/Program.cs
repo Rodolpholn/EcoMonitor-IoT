@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using EcoMonitor.Api;
 using Scalar.AspNetCore; // <--- Importante adicionar isso
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Banco de Dados
-var connectionString = "Host=db.eznsxbjdssojayrqetry.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true";
+var connectionString = "Host=db.eznsxbjdssojayrqetry.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true;Include Error Detail=true";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
