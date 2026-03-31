@@ -7,9 +7,10 @@ import { App } from './app';
 import { Sidebar } from './components/sidebar/sidebar';
 import { Navbar } from './components/navbar/navbar';
 import { DashboardComponent } from './pages/dashboard/dashboard';
+import { Login } from './pages/login/login';
 
 @NgModule({
-  declarations: [App, Sidebar, Navbar, DashboardComponent],
+  declarations: [App, Sidebar, Navbar, DashboardComponent, Login],
   imports: [BrowserModule, AppRoutingModule],
   providers: [provideBrowserGlobalErrorListeners(), provideHttpClient()],
   bootstrap: [App],

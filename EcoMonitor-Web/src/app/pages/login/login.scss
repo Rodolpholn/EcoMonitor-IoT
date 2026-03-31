@@ -1,0 +1,75 @@
+.login-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.side-blue {
+  flex: 1;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  @media (max-width: 768px) {
+    display: none;
+  } // Esconde no celular como na foto 2
+}
+
+.side-form {
+  flex: 1;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-box {
+  width: 80%;
+  max-width: 400px;
+
+  h1 {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .subtitle {
+    color: #888;
+    margin-bottom: 30px;
+  }
+}
+
+.custom-input {
+  width: 100%;
+  padding: 12px 20px;
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  background: #f9f9f9;
+  outline: none;
+  &:focus {
+    border-color: #4facfe;
+  }
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(to right, #4facfe, #007bff);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.forgot-link,
+.signup-text a {
+  color: #4facfe;
+  text-decoration: none;
+  font-size: 0.9rem;
+}

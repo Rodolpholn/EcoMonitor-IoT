@@ -71,6 +71,7 @@
     &.active a .icon {
       transform: translateY(-34px);
       color: #fff !important;
+      top: -2px;
     }
 
     &.active a .text {
@@ -81,7 +82,7 @@
 
   .indicator {
     position: absolute;
-    top: -48%;
+    top: -50%;
     width: 70px;
     height: 70px;
     background: #0d6efd;
@@ -92,7 +93,7 @@
     z-index: 5;
 
     // Alinhamento inicial (ajustado para o centro do primeiro ícone)
-    left: 22px; // <--- VALOR CALIBRADO PARA CENTRALIZAR
+    left: 23px; // <--- VALOR CALIBRADO PARA CENTRALIZAR
 
     // ESSAS DUAS PEÇAS CRIAM O ARCO SUAVE DA SUA PRIMEIRA FOTO
     &::before {
