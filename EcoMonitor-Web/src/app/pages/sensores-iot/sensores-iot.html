@@ -1,0 +1,124 @@
+<div
+  #mapContainer
+  class="map-container"
+  (contextmenu)="onRightClick($event)"
+  (mousedown)="startDragging($event)"
+>
+  <div
+    class="sensor-overlay"
+    [style.transform]="'scale(' + zoomLevel + ')'"
+    style="transform-origin: 0 0"
+  >
+    @for (s of sensoresNaPlanta; track s.id) {
+      <div
+        class="sensor-icon"
+        [style.top.px]="s.y"
+        [style.left.px]="s.x"
+        (contextmenu)="onRightClickSensor($event, s)"
+        (mousedown)="$event.stopPropagation()"
+      >
+        <i class="bi bi-cpu-fill text-primary" draggable="false"></i>
+        <div class="sensor-label">{{ s.nome }}</div>
+
+        <div class="sensor-data-hover shadow">
+          <div class="header-hover">
+            {{ s.nome }} <small>({{ s.id }})</small>
+          </div>
+          <div class="body-hover">
+            <p>
+              <i class="bi bi-thermometer-half"></i> Temp: <strong>{{ s.temp }}°C</strong>
+            </p>
+            <p>
+              <i class="bi bi-droplet"></i> Umid: <strong>{{ s.umidade }}%</strong>
+            </p>
+            <p>
+              <i class="bi bi-wind"></i> CO2: <strong>{{ s.co2 }} ppm</strong>
+            </p>
+          </div>
+          <div
+            class="footer-hover text-info"
+            style="font-size: 0.6rem; padding: 5px 10px; border-top: 1px solid #444"
+          >
+            Clique dir. para gerenciar
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (showMenu) {
+    <div
+      class="context-menu"
+      [style.top.px]="menuY"
+      [style.left.px]="menuX"
+      (click)="$event.stopPropagation()"
+    >
+      <ul>
+        <li (click)="addEquipamento()"><i class="bi bi-plus-circle"></i> Adicionar Equipamento</li>
+        <li (click)="configurarMapa()"><i class="bi bi-gear"></i> Configurar Planta</li>
+      </ul>
+    </div>
+  }
+
+  @if (showSensorMenu) {
+    <div
+      class="context-menu"
+      [style.top.px]="menuY"
+      [style.left.px]="menuX"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="menu-header px-3 py-1 bg-light fw-bold border-bottom small">
+        {{ sensorParaEditar?.nome }}
+      </div>
+      <ul>
+        <li (click)="editarSensor()"><i class="bi bi-pencil"></i> Editar</li>
+        <li (click)="excluirSensor()" class="text-danger"><i class="bi bi-trash"></i> Excluir</li>
+      </ul>
+    </div>
+  }
+</div>
+
+@if (showModal) {
+  <div class="modal-backdrop" (click)="showModal = false">
+    <div class="modal-popup shadow-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header bg-primary text-white py-2 px-3">
+        <h6 class="modal-title m-0">Novo Equipamento</h6>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="showModal = false"
+        ></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <div class="mb-2">
+          <label class="small fw-bold mb-1">ID ESP32:</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="novoSensor.id"
+            placeholder="Ex: ESP32-001"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="small fw-bold mb-1">Nome Local:</label>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="novoSensor.nome"
+            placeholder="Ex: Cozinha"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer py-2 bg-light">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="showModal = false">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" (click)="salvarEquipamento()">
+          Salvar na Planta
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,132 +1,54 @@
-<div class="d-flex flex-column flex-md-row" id="wrapper">
-  <div
-    class="bg-primary text-white shadow d-none d-md-block"
-    id="sidebar-wrapper"
-    style="width: 250px; min-height: 100vh"
-  >
-    <div class="sidebar-heading p-4 fs-4 fw-bold border-bottom border-light">
-      <i class="bi bi-cpu-fill me-2"></i>EcoMonitor
-    </div>
-    <div class="list-group list-group-flush p-2">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active-desktop"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
-      >
-        <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
-      </a>
-      <a
-        href="#"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2 opacity-50"
-      >
-        <i class="bi bi-cpu-fill me-2"></i> Sensores IoT
-      </a>
-      <a
-        href="#"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mt-5 text-warning"
-      >
-        <i class="bi bi-door-open-fill me-2"></i> Deslogar
-      </a>
-    </div>
-  </div>
-
-  <div class="navigation d-md-none">
-    <ul>
-      <li class="list" routerLinkActive="active">
-        <a routerLink="/dashboard">
-          <span class="icon"><i class="bi bi-grid-1x2-fill"></i></span>
-          <span class="text">Home</span>
-        </a>
-      </li>
-      <li class="list" routerLinkActive="active">
-        <a href="#">
-          <span class="icon"><i class="bi bi-cpu-fill"></i></span>
-          <span class="text">Sensores</span>
-        </a>
-      </li>
-      <li class="list logout-item" routerLinkActive="active">
-        <a href="#">
-          <span class="icon"><i class="bi bi-door-open-fill"></i></span>
-          <span class="text">Sair</span>
-        </a>
-      </li>
-      <div class="indicator"></div>
-    </ul>
-  </div>
-
-  <div id="page-content-wrapper" class="flex-grow-1 bg-light overflow-auto">
-    <nav
-      class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 d-none d-md-flex"
-    >
-      <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1 text-secondary">Dashboard Principal</span>
-        <div class="ms-auto d-flex align-items-center">
-          <span class="me-3 fw-bold text-primary">Olá, Rodolfo</span>
-          <i class="bi bi-person-circle fs-3 text-primary"></i>
-        </div>
+<div class="row g-3 g-md-4 mb-5">
+  <div class="col-12">
+    <div class="card p-3 p-md-4 shadow-sm border-0" style="border-radius: 20px">
+      <h5 class="card-title text-primary fw-bold mb-3 d-flex align-items-center">
+        <i class="bi bi-graph-up me-2"></i>
+        <span class="fs-6 fs-md-5">Histórico de Temperatura</span>
+      </h5>
+      <div class="chart-container" style="position: relative; height: 300px; width: 100%">
+        <canvas #graficoTemp></canvas>
       </div>
-    </nav>
+    </div>
+  </div>
 
-    <div class="container-fluid p-2 p-md-4">
-      <div class="row g-3 g-md-4 mb-5">
-        <div class="col-12">
-          <div class="card p-3 p-md-4 shadow-sm border-0" style="border-radius: 20px">
-            <h5 class="card-title text-primary fw-bold mb-3 d-flex align-items-center">
-              <i class="bi bi-graph-up me-2"></i>
-              <span class="fs-6 fs-md-5">Histórico de Temperatura</span>
-            </h5>
-            <div class="chart-container" style="position: relative; height: 300px; width: 100%">
-              <canvas #graficoTemp></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12">
-          <div class="card shadow-sm border-0" style="border-radius: 20px">
-            <div class="card-header bg-white border-0 pt-4 px-3 px-md-4">
-              <h5 class="fw-bold fs-6 fs-md-5">
-                <i class="bi bi-list-check me-2"></i>Leituras Recentes
-              </h5>
-            </div>
-            <div class="card-body px-2 px-md-4">
-              <div class="table-responsive">
-                <table
-                  class="table table-hover table-borderless align-middle"
-                  style="min-width: 400px"
-                >
-                  <thead class="table-light">
-                    <tr>
-                      <th class="ps-3">Data/Hora</th>
-                      <th>Temp.</th>
-                      <th>Umid.</th>
-                      <th class="pe-3">LED</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (item of leituras; track item.id) {
-                      <tr>
-                        <td class="text-secondary small ps-3">
-                          {{ item.dataHora | date: 'dd/MM HH:mm' }}
-                        </td>
-                        <td class="fw-bold text-dark">{{ item.temperatura }}°C</td>
-                        <td>{{ item.umidade }}%</td>
-                        <td class="pe-3">
-                          <span
-                            class="badge rounded-pill p-2"
-                            [class.bg-success-subtle]="item.ledLigado"
-                            [class.text-success]="item.ledLigado"
-                            [class.bg-danger-subtle]="!item.ledLigado"
-                          >
-                            <i class="bi bi-lightbulb" [class.text-success]="item.ledLigado"></i>
-                          </span>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  <div class="col-12">
+    <div class="card shadow-sm border-0" style="border-radius: 20px">
+      <div class="card-header bg-white border-0 pt-4 px-3 px-md-4">
+        <h5 class="fw-bold fs-6 fs-md-5"><i class="bi bi-list-check me-2"></i>Leituras Recentes</h5>
+      </div>
+      <div class="card-body px-2 px-md-4">
+        <div class="table-responsive">
+          <table class="table table-hover table-borderless align-middle" style="min-width: 400px">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Data/Hora</th>
+                <th>Temp.</th>
+                <th>Umid.</th>
+                <th class="pe-3">LED</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of leituras; track item.id) {
+                <tr>
+                  <td class="text-secondary small ps-3">
+                    {{ item.dataHora | date: 'dd/MM HH:mm' }}
+                  </td>
+                  <td class="fw-bold text-dark">{{ item.temperatura }}°C</td>
+                  <td>{{ item.umidade }}%</td>
+                  <td class="pe-3">
+                    <span
+                      class="badge rounded-pill p-2"
+                      [class.bg-success-subtle]="item.ledLigado"
+                      [class.text-success]="item.ledLigado"
+                      [class.bg-danger-subtle]="!item.ledLigado"
+                    >
+                      <i class="bi bi-lightbulb" [class.text-success]="item.ledLigado"></i>
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

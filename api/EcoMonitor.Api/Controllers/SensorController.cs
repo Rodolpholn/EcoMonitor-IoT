@@ -15,19 +15,43 @@ public class SensorController : ControllerBase
         _context = context;
     }
 
-    // Método para RECEBER os dados do sensor (POST)
+    // Método para RECEBER os dados do sensor ESP32 (POST)
     [HttpPost]
-    public async Task<IActionResult> EnviarDados([FromBody] LeituraSensor leitura)
+    public async Task<IActionResult> EnviarDados([FromBody] SensorLeitura leitura)
     {
-        _context.Leituras.Add(leitura);
+        if (leitura == null) return BadRequest("Dados inválidos.");
+
+        // --- Lógica de Alerta do Cliente ---
+        // Usamos a temperatura do SHT40 como referência principal
+        if (leitura.TempSht40 > 60 || leitura.TempSht40 < -20)
+        {
+            leitura.AlertaAtivo = true;
+        }
+        else
+        {
+            leitura.AlertaAtivo = false;
+        }
+
+        leitura.DataHora = DateTime.Now; // Garante o horário do registro
+
+        _context.SensorLeituras.Add(leitura);
         await _context.SaveChangesAsync();
-        return Ok(new { mensagem = "Dados salvos com sucesso no banco!" });
+
+        return Ok(new { 
+            mensagem = "Dados salvos com sucesso!", 
+            alerta = leitura.AlertaAtivo,
+            id = leitura.Id 
+        });
     }
 
     // Método para BUSCAR os dados para o Angular (GET)
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LeituraSensor>>> ListarDados()
+    public async Task<ActionResult<IEnumerable<SensorLeitura>>> ListarDados()
     {
-        return await _context.Leituras.OrderByDescending(x => x.DataHora).ToListAsync();
+        // Retorna as últimas 50 leituras para não sobrecarregar o gráfico inicial
+        return await _context.SensorLeituras
+            .OrderByDescending(x => x.DataHora)
+            .Take(50)
+            .ToListAsync();
     }
 }

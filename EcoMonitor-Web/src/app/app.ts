@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router'; // Adicionado para controlar o layout
 
 @Component({
   selector: 'app-root',
@@ -7,17 +8,14 @@ import { Component } from '@angular/core';
   styleUrl: './app.scss',
 })
 export class App {
-  // Função que move a classe 'active' entre os itens do menu mobile
-  setActive(event: MouseEvent) {
-    // 1. Encontra todos os itens da lista mobile
-    const listItems = document.querySelectorAll('.navigation ul li');
+  // Injetamos o router aqui para usar no HTML
+  constructor(public router: Router) {}
 
-    // 2. Remove a classe active de todos
+  setActive(event: MouseEvent) {
+    const listItems = document.querySelectorAll('.navigation ul li');
     listItems.forEach((item) => {
       item.classList.remove('active');
     });
-
-    // 3. Adiciona a classe active no item que foi clicado
     const clickedElement = event.currentTarget as HTMLElement;
     clickedElement.classList.add('active');
   }

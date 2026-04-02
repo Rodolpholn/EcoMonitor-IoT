@@ -1,0 +1,143 @@
+.map-container {
+  width: 100%;
+  height: calc(100vh - 100px);
+  position: relative;
+  border-radius: 15px;
+  overflow: auto;
+  cursor: crosshair;
+  user-select: none;
+  background-color: #f0f2f5;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+
+  .sensor-overlay {
+    min-width: 3000px;
+    min-height: 2000px;
+    position: relative;
+    padding: 200px;
+    background-color: #ffffff;
+    background-image:
+      radial-gradient(#d5d9dc 10%, transparent 10%), url('../../../assets/planta.jpg');
+    background-repeat: repeat, no-repeat;
+    background-size:
+      25px 25px,
+      contain;
+    background-position: center, center;
+    transform-origin: 0 0; // Crucial para o zoom não bugar
+    transition: transform 0.1s ease-out;
+  }
+}
+
+.sensor-icon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  &:hover {
+    z-index: 999 !important;
+    .sensor-data-hover {
+      display: block;
+    }
+  }
+  i {
+    font-size: 2.2rem;
+    color: #0d6efd;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+  }
+  .sensor-label {
+    font-size: 0.7rem;
+    font-weight: bold;
+    background: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: -5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.sensor-data-hover {
+  width: 190px;
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  background: #212529;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  .header-hover {
+    background: #0d6efd;
+    padding: 5px 10px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+  }
+  .body-hover {
+    padding: 8px 10px;
+    p {
+      margin: 2px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
+
+.context-menu {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 200px;
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+    li {
+      padding: 10px 15px;
+      cursor: pointer;
+      &:hover {
+        background: #f0f7ff;
+        color: #0d6efd;
+      }
+    }
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-popup {
+  background: white;
+  width: 320px;
+  border-radius: 12px;
+  animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -3,6 +3,13 @@
   overflow-x: hidden;
   font-family: 'Poppins', sans-serif; /* Sugestão de fonte mais moderna */
 }
+// No arquivo src/app/app.scss
+#page-content-wrapper {
+  padding-top: 60px; // Espaço para a navbar mobile se necessário
+  @media (min-width: 768px) {
+    padding-top: 0;
+  }
+}
 
 @media (max-width: 767.98px) {
   .navigation {
