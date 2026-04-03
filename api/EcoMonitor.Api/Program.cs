@@ -16,7 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // 2. Supabase Client
 var supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
-var supabaseKey = "sb_publishable_EWmGPALIJD2IzpS9o0nvWg_qz5zs..."; 
+var supabaseKey = "sb_publishable_EWmGpALIJD2IzpS9o0nvWg_qz5zsgWR"; 
 
 builder.Services.AddScoped<Supabase.Client>(_ => 
     new Supabase.Client(supabaseUrl, supabaseKey, new SupabaseOptions
