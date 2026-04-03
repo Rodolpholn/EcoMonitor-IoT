@@ -17,19 +17,19 @@ namespace EcoMonitor.Api.Models
         [Column("nome")]
         public string? Nome { get; set; }
         [Column("pos_x")]
-        public double PosX { get; set; }
+        public double? PosX { get; set; }
 
         [Column("pos_y")]
-        public double PosY { get; set; }
+        public double? PosY { get; set; }
 
         [Column("temperatura")]
-        public double Temperatura { get; set; }
+        public double? Temperatura { get; set; }
 
         [Column("umidade")]
-        public double Umidade { get; set; }
+        public double? Umidade { get; set; }
 
         [Column("co2")]
-        public double Co2 { get; set; }
+        public double? Co2 { get; set; }
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
