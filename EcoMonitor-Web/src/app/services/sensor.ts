@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class SensorService {
   // Ajustado para a sua porta 5020 e o endpoint que criamos no Controller
-  private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api/sensores';
+  private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api/Sensores';
 
   constructor(private http: HttpClient) {}
 

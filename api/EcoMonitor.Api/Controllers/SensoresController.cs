@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace EcoMonitor.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/Sensores")]
     public class SensoresController : ControllerBase
     {
         private readonly Supabase.Client _supabaseClient;
