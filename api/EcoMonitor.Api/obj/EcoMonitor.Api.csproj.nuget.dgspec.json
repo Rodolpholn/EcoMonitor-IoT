@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj": {}
+    "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj": {
+    "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+        "projectUniqueName": "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
         "projectName": "EcoMonitor.Api",
-        "projectPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+        "projectPath": "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
         "packagesPath": "C:\\Users\\rodol\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\obj\\",
+        "outputPath": "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\rodol\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -65,6 +65,14 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[9.0.0, )"
+            },
+            "postgrest-csharp": {
+              "target": "Package",
+              "version": "[3.5.1, )"
+            },
+            "supabase-csharp": {
+              "target": "Package",
+              "version": "[0.16.2, )"
             }
           },
           "imports": [
