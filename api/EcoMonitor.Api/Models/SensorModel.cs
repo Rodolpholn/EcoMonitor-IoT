@@ -15,8 +15,7 @@ namespace EcoMonitor.Api.Models
         public string Id { get; set; } = string.Empty;
 
         [Column("nome")]
-        public string Nome { get; set; } = string.Empty;
-
+        public string? Nome { get; set; }
         [Column("pos_x")]
         public double PosX { get; set; }
 
