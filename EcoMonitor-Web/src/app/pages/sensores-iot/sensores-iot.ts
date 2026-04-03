@@ -1,5 +1,5 @@
 import { Component, HostListener, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { SensorService } from '../../services/sensor'; // Verifique se este caminho está correto no seu projeto
+import { SensorService } from '../../services/sensor';
 
 @Component({
   selector: 'app-sensores-iot',
@@ -42,15 +42,21 @@ export class SensoresIot implements OnInit {
   carregarSensores() {
     this.sensorService.getSensores().subscribe({
       next: (dados) => {
-        this.sensoresNaPlanta = dados.map((s) => ({
-          ...s,
-          x: s.posX,
-          y: s.posY,
-          // Mantém simulação se os valores do banco vierem zerados
-          temp: s.temperatura > 0 ? s.temperatura.toFixed(1) : (22 + Math.random() * 5).toFixed(1),
-          umidade: s.umidade > 0 ? s.umidade : Math.floor(40 + Math.random() * 20),
-          co2: s.co2 > 0 ? s.co2 : Math.floor(400 + Math.random() * 200),
-        }));
+        // Garantimos que 'dados' é um array antes de mapear
+        if (dados && Array.isArray(dados)) {
+          this.sensoresNaPlanta = dados.map((s) => ({
+            ...s,
+            // Proteção: caso a API mande posX ou pos_x (lowercase)
+            x: s.posX ?? s.pos_x ?? 0,
+            y: s.posY ?? s.pos_y ?? 0,
+
+            // Simulação visual de sensores se os valores reais forem 0 ou nulos
+            temp:
+              s.temperatura > 0 ? s.temperatura.toFixed(1) : (22 + Math.random() * 5).toFixed(1),
+            umidade: s.umidade > 0 ? s.umidade : Math.floor(40 + Math.random() * 20),
+            co2: s.co2 > 0 ? s.co2 : Math.floor(400 + Math.random() * 200),
+          }));
+        }
       },
       error: (err) => {
         console.error('Erro ao buscar sensores:', err);
@@ -105,6 +111,8 @@ export class SensoresIot implements OnInit {
 
     this.menuX = event.clientX - rect.left;
     this.menuY = event.clientY - rect.top;
+
+    // Cálculo exato da posição no mapa 3000px compensando zoom e scroll
     this.sensorX = (el.scrollLeft + (event.clientX - rect.left)) / this.zoomLevel;
     this.sensorY = (el.scrollTop + (event.clientY - rect.top)) / this.zoomLevel;
 
@@ -144,7 +152,6 @@ export class SensoresIot implements OnInit {
 
   salvarEquipamento() {
     if (this.novoSensor.id && this.novoSensor.nome) {
-      // Criamos o payload garantindo que todos os campos esperados pelo SensorModel.cs existam
       const payload = {
         id: this.novoSensor.id,
         nome: this.novoSensor.nome,
@@ -158,17 +165,19 @@ export class SensoresIot implements OnInit {
 
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
-          this.carregarSensores();
+          this.carregarSensores(); // Recarrega do Supabase
           this.showModal = false;
           this.novoSensor = { id: '', nome: '' };
         },
         error: (err) => {
           console.error('Erro detalhado:', err);
-          alert(`Erro ao salvar: ${err.status} - ${err.statusText || 'Verifique o Console'}`);
+          // Alerta mais amigável
+          const msg = err.error?.message || err.statusText || 'Erro de conexão com a API';
+          alert(`Erro ao salvar no banco: ${msg}`);
         },
       });
     } else {
-      alert('Preencha todos os campos!');
+      alert('Por favor, informe o ID e o Nome do sensor.');
     }
   }
 
@@ -186,11 +195,11 @@ export class SensoresIot implements OnInit {
 
   editarSensor() {
     this.showSensorMenu = false;
-    alert(`Edição de ${this.sensorParaEditar.nome} em desenvolvimento.`);
+    alert(`Edição de ${this.sensorParaEditar.nome} em breve.`);
   }
 
   configurarMapa() {
     this.showMenu = false;
-    alert('Configuração de fundo em desenvolvimento.');
+    alert('Funcionalidade de troca de imagem em breve.');
   }
 }

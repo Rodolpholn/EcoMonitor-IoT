@@ -17,10 +17,10 @@ namespace EcoMonitor.Api.Models
         [Column("nome")]
         public string? Nome { get; set; }
         [Column("pos_x")]
-        public double? PosX { get; set; }
+        public double PosX { get; set; }
 
         [Column("pos_y")]
-        public double? PosY { get; set; }
+        public double PosY { get; set; }
 
         [Column("temperatura")]
         public double? Temperatura { get; set; }

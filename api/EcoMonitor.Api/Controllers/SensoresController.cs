@@ -22,11 +22,16 @@ namespace EcoMonitor.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SensorModel>>> GetSensores()
         {
-            var result = await _supabaseClient
-                .From<SensorModel>()
-                .Get();
-
-            return Ok(result.Models);
+            try 
+    {
+        var result = await _supabaseClient.From<SensorModel>().Get();
+        return Ok(result.Models);
+    }
+    catch (Exception ex) 
+    {
+        // Isso vai fazer o erro aparecer no Log do Railway sem derrubar a API
+        return BadRequest(new { mensagem = "Erro ao ler do banco", detalhe = ex.Message });
+    }
         }
 
         // POST: api/sensores
