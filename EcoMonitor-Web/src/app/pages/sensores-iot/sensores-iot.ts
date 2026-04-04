@@ -13,7 +13,7 @@ export class SensoresIot implements OnInit {
 
   // URLs e Configurações
   private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api';
-  imagemPlantaUrl: string = ''; // Inicia vazio para validar o botão de upload no HTML
+  imagemPlantaUrl: string = '';
 
   showMenu = false;
   showSensorMenu = false;
@@ -47,19 +47,23 @@ export class SensoresIot implements OnInit {
     this.carregarSensores();
     this.carregarConfiguracaoPlanta();
 
-    // Atualiza os dados a cada 5 segundos para refletir as leituras da ESP32
     setInterval(() => this.carregarSensores(), 5000);
   }
 
   // --- CARREGAR CONFIGURAÇÃO DA PLANTA ---
   carregarConfiguracaoPlanta() {
+    // CORREÇÃO: Chamada limpa sem o ":1" que causava o 404
     this.http.get<any>(`${this.apiUrl}/Planta`).subscribe({
       next: (res) => {
-        // IMPORTANTE: Com PropertyNamingPolicy = null, o C# envia "ImagemUrl" (I maiúsculo)
-        this.imagemPlantaUrl = res && res.ImagemUrl ? res.ImagemUrl : '';
+        // AJUSTE DE MAPEAMENTO: No C# está "ImagemUrl"
+        // Verificamos as duas possibilidades por segurança
+        if (res) {
+          this.imagemPlantaUrl = res.ImagemUrl || res.imagemUrl || '';
+          console.log('Planta carregada com sucesso do banco.');
+        }
       },
       error: (err) => {
-        console.log('Nenhuma planta configurada ou erro de conexão.');
+        console.error('Erro ao carregar planta. Verifique se o ID 1 existe no banco.', err);
         this.imagemPlantaUrl = '';
       },
     });
@@ -108,15 +112,15 @@ export class SensoresIot implements OnInit {
           const base64Image = reader.result as string;
           this.imagemPlantaUrl = base64Image;
 
-          // AJUSTE: As chaves devem ser idênticas ao Model C# (Maiúsculas)
+          // AJUSTE: Enviando chaves em PascalCase para bater com o C# (PropertyNamingPolicy = null)
           const payload = {
             Id: 1,
             ImagemUrl: base64Image,
           };
 
           this.http.post(`${this.apiUrl}/Planta/update`, payload).subscribe({
-            next: () => console.log('Planta atualizada com sucesso no banco!'),
-            error: (err) => console.error('Erro ao salvar planta:', err),
+            next: () => console.log('Planta persistida no Supabase.'),
+            error: (err) => console.error('Erro ao salvar planta no servidor:', err),
           });
         };
         reader.readAsDataURL(file);
@@ -137,7 +141,7 @@ export class SensoresIot implements OnInit {
       };
 
       this.http.post(`${this.apiUrl}/Planta/update`, payload).subscribe({
-        next: () => console.log('Planta removida do banco!'),
+        next: () => console.log('Planta removida do banco com sucesso.'),
         error: (err) => console.error('Erro ao remover planta:', err),
       });
     }
@@ -245,7 +249,7 @@ export class SensoresIot implements OnInit {
           this.carregarSensores();
           this.showModal = false;
         },
-        error: (err) => console.error('Erro ao salvar:', err),
+        error: (err) => console.error('Erro ao salvar sensor:', err),
       });
     }
   }

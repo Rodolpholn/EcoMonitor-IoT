@@ -24,20 +24,24 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Busca todas as configurações e filtra o ID 1 na memória para evitar erros de cast/query
                 var result = await _supabaseClient
                     .From<PlantaModel>()
                     .Get();
 
                 var planta = result.Models.FirstOrDefault(x => x.Id == 1);
                 
+                // MELHORIA: Se não existir, retornamos um objeto limpo em vez de erro 404
+                // Isso evita erros vermelhos no console do Angular ao iniciar o sistema
                 if (planta == null) 
-                    return NotFound(new { mensagem = "Configuração não encontrada no banco." });
+                {
+                    return Ok(new PlantaModel { Id = 1, ImagemUrl = "" });
+                }
 
                 return Ok(planta);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERRO GET] {ex.Message}");
                 return BadRequest(new { mensagem = "Erro ao buscar planta", detalhe = ex.Message });
             }
         }
@@ -48,19 +52,16 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                if (planta == null) return BadRequest("Dados inválidos.");
-
-                // Garante que estamos sempre atualizando o registro único
-                planta.Id = 1;
-
-                // LOG DE DEBUG: Verifique isso no console do seu Railway/Terminal
-                Console.WriteLine($"[INFO] Recebendo update de planta. ID: {planta.Id}");
-                if (!string.IsNullOrEmpty(planta.ImagemUrl))
+                if (planta == null || string.IsNullOrEmpty(planta.ImagemUrl)) 
                 {
-                    Console.WriteLine($"[INFO] Tamanho da string Base64: {planta.ImagemUrl.Length} caracteres.");
+                    // Se o payload vier vazio (Remover Planta), garantimos que o ID 1 seja limpo
+                    planta = new PlantaModel { Id = 1, ImagemUrl = "" };
                 }
 
-                // O Upsert identifica o ID 1 e atualiza a linha existente
+                planta.Id = 1;
+
+                Console.WriteLine($"[INFO] Atualizando planta. Tamanho Base64: {planta.ImagemUrl.Length}");
+
                 await _supabaseClient
                     .From<PlantaModel>()
                     .Upsert(planta);
@@ -69,8 +70,7 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
-                // Log detalhado do erro no servidor
-                Console.WriteLine($"[ERRO] Falha ao dar Upsert na planta: {ex.Message}");
+                Console.WriteLine($"[ERRO POST] {ex.Message}");
                 return BadRequest(new { mensagem = "Erro ao salvar planta", detalhe = ex.Message });
             }
         }
