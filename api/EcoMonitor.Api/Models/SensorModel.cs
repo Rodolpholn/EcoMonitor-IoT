@@ -1,6 +1,6 @@
 using Postgrest.Attributes;
 using Postgrest.Models;
-using System.Text.Json.Serialization;
+using System.Text.Json.Serialization; // Necessário para o JsonPropertyName
 
 namespace EcoMonitor.Api.Models
 {
@@ -8,7 +8,7 @@ namespace EcoMonitor.Api.Models
     public class SensorModel : BaseModel
     {
         [PrimaryKey("id", false)]
-        [JsonPropertyName("id")] // Força o JSON a aceitar 'id' minúsculo
+        [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
         [Column("nome")]
@@ -16,7 +16,7 @@ namespace EcoMonitor.Api.Models
         public string? Nome { get; set; }
 
         [Column("pos_x")]
-        [JsonPropertyName("pos_x")] // Mapeia 'pos_x' do JSON para esta propriedade
+        [JsonPropertyName("pos_x")]
         public double? PosX { get; set; }
 
         [Column("pos_y")]
