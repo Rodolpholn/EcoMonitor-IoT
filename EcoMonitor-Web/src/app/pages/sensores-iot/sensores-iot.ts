@@ -1,5 +1,6 @@
 import { Component, HostListener, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { SensorService } from '../../services/sensor';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-sensores-iot',
@@ -9,6 +10,10 @@ import { SensorService } from '../../services/sensor';
 })
 export class SensoresIot implements OnInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
+
+  // URLs e Configurações
+  private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api';
+  imagemPlantaUrl: string = 'assets/planta.jpg'; // Imagem padrão enquanto carrega do banco
 
   showMenu = false;
   showSensorMenu = false;
@@ -33,12 +38,30 @@ export class SensoresIot implements OnInit {
   sensorParaEditar: any = null;
   sensoresNaPlanta: any[] = [];
 
-  constructor(private sensorService: SensorService) {}
+  constructor(
+    private sensorService: SensorService,
+    private http: HttpClient,
+  ) {}
 
   ngOnInit() {
     this.carregarSensores();
-    // Atualiza os dados a cada 5 segundos para refletir a ESP32
+    this.carregarConfiguracaoPlanta(); // Busca a imagem salva no banco ao iniciar
+
+    // Atualiza os dados a cada 5 segundos para refletir as leituras da ESP32
     setInterval(() => this.carregarSensores(), 5000);
+  }
+
+  carregarConfiguracaoPlanta() {
+    // Busca a configuração da planta (que salvamos com ID 1)
+    this.http.get<any>(`${this.apiUrl}/Planta`).subscribe({
+      next: (res) => {
+        if (res && res.imagemUrl) {
+          // Nota: C# envia como imagemUrl (CamelCase)
+          this.imagemPlantaUrl = res.imagemUrl;
+        }
+      },
+      error: (err) => console.log('Usando planta padrão (assets).'),
+    });
   }
 
   carregarSensores() {
@@ -47,10 +70,8 @@ export class SensoresIot implements OnInit {
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Mapeia as coordenadas vindas da API para o gráfico
             x: s.pos_x ?? s.posX ?? 0,
             y: s.pos_y ?? s.posY ?? 0,
-            // Garante que o HTML receba os valores exatos da API
             temp_aht20: s.temp_aht20,
             umidade_aht20: s.umidade_aht20,
             pressao_bmp280: s.pressao_bmp280,
@@ -67,26 +88,61 @@ export class SensoresIot implements OnInit {
           }));
         }
       },
-      error: (err) => {
-        console.error('Erro ao buscar sensores:', err);
-      },
+      error: (err) => console.error('Erro ao buscar sensores:', err),
     });
   }
 
-  @HostListener('wheel', ['$event'])
-  onMouseWheel(e: WheelEvent) {
-    e.preventDefault();
-    const step = 0.1;
-    this.zoomLevel =
-      e.deltaY < 0
-        ? Math.min(this.zoomLevel + step, this.maxZoom)
-        : Math.max(this.zoomLevel - step, this.minZoom);
+  // --- LÓGICA DE UPLOAD DA PLANTA ---
+  configurarMapa() {
+    this.showMenu = false;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64Image = reader.result as string;
+
+          this.imagemPlantaUrl = base64Image;
+
+          // Salva no banco via PlantaController
+          this.http
+            .post(`${this.apiUrl}/Planta/update`, { id: 1, imagem_url: base64Image })
+            .subscribe({
+              next: () => console.log('Planta atualizada com sucesso no banco!'),
+              error: (err) => console.error('Erro ao salvar imagem no banco:', err),
+            });
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
   }
 
-  // Função para arrastar o mapa
+  // --- CONTROLES DE ZOOM E DRAG ---
+  @HostListener('wheel', ['$event'])
+  onMouseWheel(e: WheelEvent) {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      const step = 0.1;
+      this.zoomLevel =
+        e.deltaY < 0
+          ? Math.min(this.zoomLevel + step, this.maxZoom)
+          : Math.max(this.zoomLevel - step, this.minZoom);
+    }
+  }
+
   startDragging(e: MouseEvent) {
     const target = e.target as HTMLElement;
-    if (e.button === 0 && !target.closest('.context-menu') && !target.closest('.modal-popup')) {
+    if (
+      e.button === 0 &&
+      !target.closest('.context-menu') &&
+      !target.closest('.modal-popup') &&
+      !target.closest('.sensor-icon')
+    ) {
       this.isDragging = true;
       const el = this.mapContainer.nativeElement;
       this.startX = e.pageX - el.offsetLeft;
@@ -113,18 +169,15 @@ export class SensoresIot implements OnInit {
     if (this.mapContainer) this.mapContainer.nativeElement.style.cursor = 'crosshair';
   }
 
+  // --- MENUS DE CONTEXTO ---
   onRightClick(event: MouseEvent) {
-    if (this.isDragging) return;
     event.preventDefault();
     const el = this.mapContainer.nativeElement;
     const rect = el.getBoundingClientRect();
-
     this.menuX = event.clientX - rect.left;
     this.menuY = event.clientY - rect.top;
-
     this.sensorX = (el.scrollLeft + (event.clientX - rect.left)) / this.zoomLevel;
     this.sensorY = (el.scrollTop + (event.clientY - rect.top)) / this.zoomLevel;
-
     this.showSensorMenu = false;
     this.showMenu = true;
   }
@@ -150,13 +203,11 @@ export class SensoresIot implements OnInit {
     }
   }
 
+  // --- CRUD SENSORES ---
   addEquipamento() {
     this.showMenu = false;
-    this.showSensorMenu = false;
-    setTimeout(() => {
-      this.showModal = true;
-      this.novoSensor = { id: '', nome: '' };
-    }, 50);
+    this.showModal = true;
+    this.novoSensor = { id: '', nome: '' };
   }
 
   salvarEquipamento() {
@@ -166,46 +217,32 @@ export class SensoresIot implements OnInit {
         nome: this.novoSensor.nome,
         pos_x: Number(this.sensorX.toFixed(2)),
         pos_y: Number(this.sensorY.toFixed(2)),
-        temperatura: 0.0,
-        umidade: 0.0,
-        co2: 0.0,
       };
 
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
           this.carregarSensores();
           this.showModal = false;
-          this.novoSensor = { id: '', nome: '' };
         },
-        error: (err) => {
-          console.error('Erro ao salvar:', err);
-          alert(`Erro ao salvar no banco.`);
-        },
+        error: (err) => console.error('Erro ao salvar:', err),
       });
-    } else {
-      alert('Por favor, informe o ID e o Nome do sensor.');
     }
   }
 
   excluirSensor() {
-    if (confirm(`Deseja remover o sensor ${this.sensorParaEditar.nome}?`)) {
+    if (confirm(`Remover ${this.sensorParaEditar.nome}?`)) {
       this.sensorService.excluirSensor(this.sensorParaEditar.id).subscribe({
         next: () => {
           this.carregarSensores();
           this.showSensorMenu = false;
         },
-        error: (err) => alert('Erro ao excluir: ' + err.message),
+        error: (err) => console.error('Erro ao excluir:', err),
       });
     }
   }
 
   editarSensor() {
     this.showSensorMenu = false;
-    alert(`Edição de ${this.sensorParaEditar.nome} em breve.`);
-  }
-
-  configurarMapa() {
-    this.showMenu = false;
-    alert('Funcionalidade de troca de imagem em breve.');
+    alert('Edição de dados em breve.');
   }
 }
