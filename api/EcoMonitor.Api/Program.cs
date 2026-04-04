@@ -2,22 +2,28 @@ using Microsoft.EntityFrameworkCore;
 using EcoMonitor.Api;
 using Scalar.AspNetCore;
 using Supabase;
-using System.Text.Json;
+using Microsoft.AspNetCore.Http.Features;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Banco de Dados
-var connectionString = "Host=aws-1-sa-east-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.eznsxbjdssojayrqetry;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true;";
+// 1. Configuração de Limites de Upload (Essencial para Base64 de imagens grandes)
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = int.MaxValue;
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 
+// 2. Banco de Dados
+var connectionString = "Host=aws-1-sa-east-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.eznsxbjdssojayrqetry;Password=3ca!8M39Fa$%s@N;SslMode=Require;Trust Server Certificate=true;";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// 2. Supabase Client
+// 3. Supabase Client
 var supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
 var supabaseKey = "sb_publishable_EWmGpALIJD2IzpS9o0nvWg_qz5zsgWR"; 
-
 builder.Services.AddScoped<Supabase.Client>(_ => 
     new Supabase.Client(supabaseUrl, supabaseKey, new SupabaseOptions
     {
@@ -25,7 +31,7 @@ builder.Services.AddScoped<Supabase.Client>(_ =>
         AutoConnectRealtime = true
     }));
 
-// 3. CORS Super Flexível (Para matar o erro de uma vez)
+// 4. CORS Super Flexível
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirTudo", policy =>
@@ -36,38 +42,42 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 4. Controllers com Ajuste de JSON (Evita o Erro 400 por causa de nomes de campos)
+// 5. Controllers com Ajuste de JSON
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Mantém nomes originais
-        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // Aceita maiúsculo ou minúsculo
+        options.JsonSerializerOptions.PropertyNamingPolicy = null; 
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
 builder.Services.AddOpenApi(); 
 
 var app = builder.Build();
 
-// --- ORDEM DOS MIDDLEWARES (AJUSTADA PARA RAILWAY) ---
+// --- ORDEM DOS MIDDLEWARES ---
 
-// O CORS DEVE SER O PRIMEIRO
+// CORS deve vir antes de quase tudo
 app.UseCors("PermitirTudo");
 
-// Forçar HTTPS para o Railway não se perder
+// Middleware para Railway/HTTPS
 app.Use((context, next) =>
 {
-    context.Request.Scheme = "https";
+    if (context.Request.Headers.ContainsKey("X-Forwarded-Proto"))
+    {
+        context.Request.Scheme = context.Request.Headers["X-Forwarded-Proto"]!;
+    }
     return next();
 });
 
 app.MapOpenApi();
 app.MapScalarApiReference(options => 
 {
-    options.WithTitle("EcoMonitor API")
-           .WithTheme(ScalarTheme.Moon);
+    options.WithTitle("EcoMonitor API").WithTheme(ScalarTheme.Moon);
 });
 
+
 app.UseHttpsRedirection();
+
 app.UseAuthorization();
 app.MapControllers();
 

@@ -24,14 +24,15 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Busca a configuração da planta (ID 1)
+                // Busca todas as configurações e filtra o ID 1 na memória para evitar erros de cast/query
                 var result = await _supabaseClient
                     .From<PlantaModel>()
-                    .Where(x => x.Id == 1)
                     .Get();
 
-                var planta = result.Models.FirstOrDefault();
-                if (planta == null) return NotFound(new { mensagem = "Configuração não encontrada" });
+                var planta = result.Models.FirstOrDefault(x => x.Id == 1);
+                
+                if (planta == null) 
+                    return NotFound(new { mensagem = "Configuração não encontrada no banco." });
 
                 return Ok(planta);
             }
@@ -47,9 +48,19 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Forçamos o ID 1 para garantir que só exista uma configuração de planta
+                if (planta == null) return BadRequest("Dados inválidos.");
+
+                // Garante que estamos sempre atualizando o registro único
                 planta.Id = 1;
 
+                // LOG DE DEBUG: Verifique isso no console do seu Railway/Terminal
+                Console.WriteLine($"[INFO] Recebendo update de planta. ID: {planta.Id}");
+                if (!string.IsNullOrEmpty(planta.ImagemUrl))
+                {
+                    Console.WriteLine($"[INFO] Tamanho da string Base64: {planta.ImagemUrl.Length} caracteres.");
+                }
+
+                // O Upsert identifica o ID 1 e atualiza a linha existente
                 await _supabaseClient
                     .From<PlantaModel>()
                     .Upsert(planta);
@@ -58,8 +69,10 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
+                // Log detalhado do erro no servidor
+                Console.WriteLine($"[ERRO] Falha ao dar Upsert na planta: {ex.Message}");
                 return BadRequest(new { mensagem = "Erro ao salvar planta", detalhe = ex.Message });
             }
         }
     }
- }
+}
