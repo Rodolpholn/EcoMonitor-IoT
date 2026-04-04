@@ -17,15 +17,14 @@
     min-width: 3000px;
     min-height: 2000px;
     position: relative;
-    padding: 200px;
+    padding: 200px; // Espaço de respiro para sensores nas bordas
     background-color: #ffffff;
-    background-image:
-      radial-gradient(#d5d9dc 10%, transparent 10%), url('../../../assets/planta.jpg');
-    background-repeat: repeat, no-repeat;
-    background-size:
-      25px 25px,
-      contain;
-    background-position: center, center;
+
+    // CORREÇÃO: Centraliza, não repete e ajusta o tamanho da imagem
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+
     transform-origin: 0 0;
     transition: transform 0.1s ease-out;
   }

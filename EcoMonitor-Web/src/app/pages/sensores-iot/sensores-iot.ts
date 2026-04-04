@@ -13,7 +13,7 @@ export class SensoresIot implements OnInit {
 
   // URLs e Configurações
   private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api';
-  imagemPlantaUrl: string = 'assets/planta.jpg'; // Imagem padrão enquanto carrega do banco
+  imagemPlantaUrl: string = ''; // Inicia vazio para validar o botão de upload
 
   showMenu = false;
   showSensorMenu = false;
@@ -45,22 +45,22 @@ export class SensoresIot implements OnInit {
 
   ngOnInit() {
     this.carregarSensores();
-    this.carregarConfiguracaoPlanta(); // Busca a imagem salva no banco ao iniciar
+    this.carregarConfiguracaoPlanta();
 
     // Atualiza os dados a cada 5 segundos para refletir as leituras da ESP32
     setInterval(() => this.carregarSensores(), 5000);
   }
 
   carregarConfiguracaoPlanta() {
-    // Busca a configuração da planta (que salvamos com ID 1)
     this.http.get<any>(`${this.apiUrl}/Planta`).subscribe({
       next: (res) => {
-        if (res && res.imagemUrl) {
-          // Nota: C# envia como imagemUrl (CamelCase)
-          this.imagemPlantaUrl = res.imagemUrl;
-        }
+        // Se imagemUrl for nulo ou vazio, mantém string vazia para mostrar o botão de Upload
+        this.imagemPlantaUrl = res && res.imagemUrl ? res.imagemUrl : '';
       },
-      error: (err) => console.log('Usando planta padrão (assets).'),
+      error: (err) => {
+        console.log('Nenhuma planta configurada no banco.');
+        this.imagemPlantaUrl = '';
+      },
     });
   }
 
@@ -105,21 +105,33 @@ export class SensoresIot implements OnInit {
         const reader = new FileReader();
         reader.onload = () => {
           const base64Image = reader.result as string;
-
           this.imagemPlantaUrl = base64Image;
 
-          // Salva no banco via PlantaController
           this.http
             .post(`${this.apiUrl}/Planta/update`, { id: 1, imagem_url: base64Image })
             .subscribe({
-              next: () => console.log('Planta atualizada com sucesso no banco!'),
-              error: (err) => console.error('Erro ao salvar imagem no banco:', err),
+              next: () => console.log('Planta atualizada com sucesso!'),
+              error: (err) => console.error('Erro ao salvar planta:', err),
             });
         };
         reader.readAsDataURL(file);
       }
     };
     input.click();
+  }
+
+  // NOVA FUNÇÃO: REMOVER PLANTA
+  removerPlanta() {
+    this.showMenu = false;
+    if (confirm('Deseja remover a planta atual?')) {
+      this.imagemPlantaUrl = ''; // Limpa localmente
+
+      // Envia string vazia para o banco para "deletar" visualmente
+      this.http.post(`${this.apiUrl}/Planta/update`, { id: 1, imagem_url: '' }).subscribe({
+        next: () => console.log('Planta removida do banco!'),
+        error: (err) => console.error('Erro ao remover planta:', err),
+      });
+    }
   }
 
   // --- CONTROLES DE ZOOM E DRAG ---
