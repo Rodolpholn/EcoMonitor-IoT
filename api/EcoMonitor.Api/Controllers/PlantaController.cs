@@ -23,27 +23,20 @@ namespace EcoMonitor.Api.Controllers
         public async Task<ActionResult<PlantaModel>> GetPlanta()
         {
             try
-            {
-                var result = await _supabaseClient
-                    .From<PlantaModel>()
-                    .Get();
+    {
+        var result = await _supabaseClient.From<PlantaModel>().Get();
+        var planta = result.Models.FirstOrDefault(x => x.Id == 1);
 
-                var planta = result.Models.FirstOrDefault(x => x.Id == 1);
-                
-                // MELHORIA: Se não existir, retornamos um objeto limpo em vez de erro 404
-                // Isso evita erros vermelhos no console do Angular ao iniciar o sistema
-                if (planta == null) 
-                {
-                    return Ok(new PlantaModel { Id = 1, ImagemUrl = "" });
-                }
+        if (planta == null) 
+            return Ok(new { Id = 1, ImagemUrl = "" });
 
-                return Ok(planta);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERRO GET] {ex.Message}");
-                return BadRequest(new { mensagem = "Erro ao buscar planta", detalhe = ex.Message });
-            }
+        // Forçamos o retorno explicitamente como JSON
+        return new JsonResult(planta);
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { erro = ex.Message });
+    }
         }
 
         // POST: api/Planta/update

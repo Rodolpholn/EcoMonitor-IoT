@@ -47,23 +47,29 @@ export class SensoresIot implements OnInit {
     this.carregarSensores();
     this.carregarConfiguracaoPlanta();
 
+    // Atualiza os dados a cada 5 segundos
     setInterval(() => this.carregarSensores(), 5000);
   }
 
   // --- CARREGAR CONFIGURAÇÃO DA PLANTA ---
   carregarConfiguracaoPlanta() {
-    // CORREÇÃO: Chamada limpa sem o ":1" que causava o 404
+    // Chamada padrão do Angular
     this.http.get<any>(`${this.apiUrl}/Planta`).subscribe({
       next: (res) => {
-        // AJUSTE DE MAPEAMENTO: No C# está "ImagemUrl"
-        // Verificamos as duas possibilidades por segurança
-        if (res) {
-          this.imagemPlantaUrl = res.ImagemUrl || res.imagemUrl || '';
-          console.log('Planta carregada com sucesso do banco.');
+        console.log('Dados brutos recebidos:', res);
+
+        // Verificamos se o objeto existe e se a propriedade está lá
+        // O C# (JsonResult) vai enviar como "Id" e "ImagemUrl"
+        if (res && res.ImagemUrl !== undefined) {
+          this.imagemPlantaUrl = res.ImagemUrl;
+          console.log('Planta carregada com sucesso!');
+        } else if (res && res.imagemUrl !== undefined) {
+          this.imagemPlantaUrl = res.imagemUrl;
         }
       },
       error: (err) => {
-        console.error('Erro ao carregar planta. Verifique se o ID 1 existe no banco.', err);
+        // Se der SyntaxError aqui, o problema é um caractere invisível no banco
+        console.error('Erro ao processar planta:', err);
         this.imagemPlantaUrl = '';
       },
     });
@@ -112,15 +118,15 @@ export class SensoresIot implements OnInit {
           const base64Image = reader.result as string;
           this.imagemPlantaUrl = base64Image;
 
-          // AJUSTE: Enviando chaves em PascalCase para bater com o C# (PropertyNamingPolicy = null)
+          // Payload com iniciais Maiúsculas (PascalCase) para bater com o Model C#
           const payload = {
             Id: 1,
             ImagemUrl: base64Image,
           };
 
           this.http.post(`${this.apiUrl}/Planta/update`, payload).subscribe({
-            next: () => console.log('Planta persistida no Supabase.'),
-            error: (err) => console.error('Erro ao salvar planta no servidor:', err),
+            next: () => console.log('Planta salva com sucesso no banco.'),
+            error: (err) => console.error('Erro ao persistir planta:', err),
           });
         };
         reader.readAsDataURL(file);
@@ -141,13 +147,13 @@ export class SensoresIot implements OnInit {
       };
 
       this.http.post(`${this.apiUrl}/Planta/update`, payload).subscribe({
-        next: () => console.log('Planta removida do banco com sucesso.'),
+        next: () => console.log('Planta removida com sucesso.'),
         error: (err) => console.error('Erro ao remover planta:', err),
       });
     }
   }
 
-  // --- CONTROLES DE ZOOM E DRAG ---
+  // --- MÉTODOS DE INTERAÇÃO ---
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
     if (e.ctrlKey) {
@@ -194,7 +200,6 @@ export class SensoresIot implements OnInit {
     if (this.mapContainer) this.mapContainer.nativeElement.style.cursor = 'crosshair';
   }
 
-  // --- MENUS DE CONTEXTO ---
   onRightClick(event: MouseEvent) {
     event.preventDefault();
     const el = this.mapContainer.nativeElement;
@@ -228,7 +233,6 @@ export class SensoresIot implements OnInit {
     }
   }
 
-  // --- CRUD SENSORES ---
   addEquipamento() {
     this.showMenu = false;
     this.showModal = true;
@@ -243,7 +247,6 @@ export class SensoresIot implements OnInit {
         pos_x: Number(this.sensorX.toFixed(2)),
         pos_y: Number(this.sensorY.toFixed(2)),
       };
-
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
           this.carregarSensores();
