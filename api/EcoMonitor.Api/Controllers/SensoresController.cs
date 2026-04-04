@@ -19,13 +19,13 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // GET: api/Sensores
+        // Busca todos os sensores para renderizar na planta baixa do Angular
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SensorModel>>> GetSensores()
         {
             try 
             {
                 var result = await _supabaseClient.From<SensorModel>().Get();
-                // Retorna a lista de modelos encontrados no Supabase
                 return Ok(result.Models);
             }
             catch (Exception ex) 
@@ -35,27 +35,36 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // POST: api/Sensores
+        // Insere ou atualiza um sensor (Upsert)
         [HttpPost]
-        public async Task<ActionResult<SensorModel>> SalvarSensor([FromBody] SensorModel sensor)
+        public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
             try
             {
-                // Removi a linha 'sensor.UpdatedAt' porque removemos do Model
-                // O Upsert vai inserir se o ID for novo ou atualizar se já existir
-                var result = await _supabaseClient
-                    .From<SensorModel>()
-                    .Upsert(sensor);
+                // CONFIGURAÇÃO CRÍTICA:
+                // ReturnType.Minimal impede que o Supabase tente devolver o objeto completo.
+                // Isso resolve o Erro 500 que derrubava sua API ao processar a resposta.
+                var options = new QueryOptions 
+                { 
+                    Returning = QueryOptions.ReturnType.Minimal 
+                };
 
-                // Retorna o objeto que foi salvo
-                return Ok(result.Model);
+                await _supabaseClient
+                    .From<SensorModel>()
+                    .Upsert(sensor, options);
+
+                // Retornamos um JSON manual para confirmar o sucesso para o Angular/Scalar
+                return Ok(new { mensagem = "Sensor salvo com sucesso!", id = sensor.Id });
             }
             catch (Exception ex)
             {
+                // Se der erro de coluna faltando ou tipo de dado, ele aparece aqui sem cair a API
                 return BadRequest(new { mensagem = "Erro ao salvar sensor", detalhe = ex.Message });
             }
         }
 
         // DELETE: api/Sensores/{id}
+        // Remove um sensor da planta baixa
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSensor(string id)
         {
