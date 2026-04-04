@@ -26,10 +26,10 @@ namespace EcoMonitor.Api.Models
         public double? Temperatura { get; set; }
 
         [Column("umidade")]
-        public double? Umidade { get; set; }
+        public double? Umidade { get; set; } = 0;
 
         [Column("co2")]
-        public double? Co2 { get; set; }
+        public double? Co2 { get; set; } = 0;
 
         // Removi o UpdatedAt por enquanto, pois não vi essa coluna no seu print do Supabase.
         // Se você quiser usar, precisa criar a coluna 'updated_at' (timestamp) lá no Supabase primeiro.
