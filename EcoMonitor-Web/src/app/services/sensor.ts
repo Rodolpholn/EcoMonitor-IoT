@@ -28,6 +28,6 @@ export class SensorService {
 
   // 4. Busca o histórico de leituras (o que você já tinha)
   getLeituras(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/leituras`);
+    return this.http.get<any[]>(this.apiUrl);
   }
 }

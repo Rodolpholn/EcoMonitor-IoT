@@ -21,23 +21,26 @@
         <div class="sensor-label">{{ s.nome }}</div>
 
         <div class="sensor-data-hover shadow">
-          <div class="header-hover">
+          <div class="header-hover bg-primary text-white p-2 small fw-bold">
             {{ s.nome }} <small>({{ s.id }})</small>
           </div>
-          <div class="body-hover">
-            <p>
-              <i class="bi bi-thermometer-half"></i> Temp: <strong>{{ s.temp }}°C</strong>
+          <div class="body-hover p-2 bg-dark text-white">
+            <p class="m-0 mb-1 small">
+              <i class="bi bi-thermometer-half text-danger"></i> Temp:
+              <strong>{{ s.temperatura ?? '--' }}°C</strong>
             </p>
-            <p>
-              <i class="bi bi-droplet"></i> Umid: <strong>{{ s.umidade }}%</strong>
+            <p class="m-0 mb-1 small">
+              <i class="bi bi-droplet text-info"></i> Umid:
+              <strong>{{ s.umidade ?? '--' }}%</strong>
             </p>
-            <p>
-              <i class="bi bi-wind"></i> CO2: <strong>{{ s.co2 }} ppm</strong>
+            <p class="m-0 small">
+              <i class="bi bi-wind text-warning"></i> CO2:
+              <strong>{{ s.co2 ?? '--' }} ppm</strong>
             </p>
           </div>
           <div
-            class="footer-hover text-info"
-            style="font-size: 0.6rem; padding: 5px 10px; border-top: 1px solid #444"
+            class="footer-hover text-info bg-dark border-top border-secondary p-1"
+            style="font-size: 0.6rem"
           >
             Clique dir. para gerenciar
           </div>
@@ -82,7 +85,7 @@
   <div class="modal-backdrop" (click)="showModal = false">
     <div class="modal-popup shadow-lg" (click)="$event.stopPropagation()">
       <div class="modal-header bg-primary text-white py-2 px-3">
-        <h6 class="modal-title m-0">Novo Equipamento</h6>
+        <h6 class="modal-title m-0 text-white">Novo Equipamento</h6>
         <button
           type="button"
           class="btn-close btn-close-white"
@@ -92,12 +95,12 @@
 
       <div class="modal-body p-3">
         <div class="mb-2">
-          <label class="small fw-bold mb-1">ID ESP32:</label>
+          <label class="small fw-bold mb-1">ID ESP32 (MAC):</label>
           <input
             type="text"
             class="form-control form-control-sm"
             [(ngModel)]="novoSensor.id"
-            placeholder="Ex: ESP32-001"
+            placeholder="Ex: ESP32-01"
           />
         </div>
         <div class="mb-3">
@@ -106,7 +109,7 @@
             type="text"
             class="form-control form-control-sm"
             [(ngModel)]="novoSensor.nome"
-            placeholder="Ex: Cozinha"
+            placeholder="Ex: Entrada"
           />
         </div>
       </div>

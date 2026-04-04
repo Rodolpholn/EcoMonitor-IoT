@@ -4,7 +4,7 @@ using Postgrest;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
-using System.Linq; // ADICIONADO: Necessário para o .Select()
+using System.Linq; 
 using Postgrest.Models;
 
 namespace EcoMonitor.Api.Controllers
@@ -21,7 +21,6 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // GET: api/Sensores
-        // Busca todos os sensores e limpa os dados antes de enviar (Resolve o Erro 500)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SensorDTO>>> GetSensores()
         {
@@ -29,17 +28,26 @@ namespace EcoMonitor.Api.Controllers
             {
                 var result = await _supabaseClient.From<SensorModel>().Get();
                 
-                // Transformamos a lista do banco (SensorModel) na lista limpa (SensorDTO)
-                // Isso remove os campos "sujos" como baseUrl, tableName, etc.
                 var listaLimpa = result.Models.Select(s => new SensorDTO
                 {
                     Id = s.Id,
                     Nome = s.Nome,
                     PosX = s.PosX,
                     PosY = s.PosY,
-                    Temperatura = s.Temperatura,
-                    Umidade = s.Umidade,
-                    Co2 = s.Co2
+                    // Novos campos da sua ESP32
+                    Co2 = s.Co2,
+                    Tvoc = s.Tvoc,
+                    TempAht20 = s.TempAht20,
+                    UmidadeAht20 = s.UmidadeAht20,
+                    PressaoBmp280 = s.PressaoBmp280,
+                    TempSht40 = s.TempSht40,
+                    UmidadeSht40 = s.UmidadeSht40,
+                    TempSht41 = s.TempSht41,
+                    Luminosidade = s.Luminosidade,
+                    TensaoBateria = s.TensaoBateria,
+                    CorrenteCompressor = s.CorrenteCompressor,
+                    TensaoCompressor = s.TensaoCompressor,
+                    SensorPorta = s.SensorPorta
                 }).ToList();
 
                 return Ok(listaLimpa);

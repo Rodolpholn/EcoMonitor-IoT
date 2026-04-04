@@ -37,24 +37,25 @@ export class SensoresIot implements OnInit {
 
   ngOnInit() {
     this.carregarSensores();
+    // Atualiza os dados a cada 5 segundos para refletir a ESP32
+    setInterval(() => this.carregarSensores(), 5000);
   }
 
   carregarSensores() {
     this.sensorService.getSensores().subscribe({
       next: (dados) => {
-        // Garantimos que 'dados' é um array antes de mapear
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Proteção: caso a API mande posX ou pos_x (lowercase)
-            x: s.posX ?? s.pos_x ?? 0,
-            y: s.posY ?? s.pos_y ?? 0,
-
-            // Simulação visual de sensores se os valores reais forem 0 ou nulos
-            temp:
-              s.temperatura > 0 ? s.temperatura.toFixed(1) : (22 + Math.random() * 5).toFixed(1),
-            umidade: s.umidade > 0 ? s.umidade : Math.floor(40 + Math.random() * 20),
-            co2: s.co2 > 0 ? s.co2 : Math.floor(400 + Math.random() * 200),
+            // Mapeia as coordenadas vindas da API para o gráfico
+            x: s.pos_x ?? s.posX ?? 0,
+            y: s.pos_y ?? s.posY ?? 0,
+            // Garante que o HTML receba os valores exatos da API
+            temp_ext: s.temp_aht20,
+            umid_ext: s.umidade_aht20,
+            temp_int: s.temp_sht40,
+            umid_int: s.umidade_sht40,
+            co2: s.co2,
           }));
         }
       },
@@ -74,6 +75,7 @@ export class SensoresIot implements OnInit {
         : Math.max(this.zoomLevel - step, this.minZoom);
   }
 
+  // Função para arrastar o mapa
   startDragging(e: MouseEvent) {
     const target = e.target as HTMLElement;
     if (e.button === 0 && !target.closest('.context-menu') && !target.closest('.modal-popup')) {
@@ -112,7 +114,6 @@ export class SensoresIot implements OnInit {
     this.menuX = event.clientX - rect.left;
     this.menuY = event.clientY - rect.top;
 
-    // Cálculo exato da posição no mapa 3000px compensando zoom e scroll
     this.sensorX = (el.scrollLeft + (event.clientX - rect.left)) / this.zoomLevel;
     this.sensorY = (el.scrollTop + (event.clientY - rect.top)) / this.zoomLevel;
 
@@ -155,25 +156,22 @@ export class SensoresIot implements OnInit {
       const payload = {
         id: this.novoSensor.id,
         nome: this.novoSensor.nome,
-        posX: Number(this.sensorX.toFixed(2)),
-        posY: Number(this.sensorY.toFixed(2)),
+        pos_x: Number(this.sensorX.toFixed(2)),
+        pos_y: Number(this.sensorY.toFixed(2)),
         temperatura: 0.0,
         umidade: 0.0,
         co2: 0.0,
-        updatedAt: new Date().toISOString(),
       };
 
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
-          this.carregarSensores(); // Recarrega do Supabase
+          this.carregarSensores();
           this.showModal = false;
           this.novoSensor = { id: '', nome: '' };
         },
         error: (err) => {
-          console.error('Erro detalhado:', err);
-          // Alerta mais amigável
-          const msg = err.error?.message || err.statusText || 'Erro de conexão com a API';
-          alert(`Erro ao salvar no banco: ${msg}`);
+          console.error('Erro ao salvar:', err);
+          alert(`Erro ao salvar no banco.`);
         },
       });
     } else {
