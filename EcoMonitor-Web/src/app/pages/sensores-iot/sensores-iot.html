@@ -20,27 +20,116 @@
         <i class="bi bi-cpu-fill text-primary" draggable="false"></i>
         <div class="sensor-label">{{ s.nome }}</div>
 
-        <div class="sensor-data-hover shadow">
-          <div class="header-hover bg-primary text-white p-2 small fw-bold">
-            {{ s.nome }} <small>({{ s.id }})</small>
-          </div>
-          <div class="body-hover p-2 bg-dark text-white">
-            <p class="m-0 mb-1 small">
-              <i class="bi bi-thermometer-half text-danger"></i> Temp:
-              <strong>{{ s.temperatura ?? '--' }}°C</strong>
-            </p>
-            <p class="m-0 mb-1 small">
-              <i class="bi bi-droplet text-info"></i> Umid:
-              <strong>{{ s.umidade ?? '--' }}%</strong>
-            </p>
-            <p class="m-0 small">
-              <i class="bi bi-wind text-warning"></i> CO2:
-              <strong>{{ s.co2 ?? '--' }} ppm</strong>
-            </p>
-          </div>
+        <div class="sensor-data-hover shadow-lg">
           <div
-            class="footer-hover text-info bg-dark border-top border-secondary p-1"
-            style="font-size: 0.6rem"
+            class="header-hover bg-primary text-white px-2 py-1 small fw-bold d-flex justify-content-between align-items-center"
+            style="font-size: 0.65rem"
+          >
+            <span>{{ s.nome }}</span>
+            <span class="opacity-75">#{{ s.id }}</span>
+          </div>
+
+          <div
+            class="body-hover p-2 bg-dark text-white"
+            style="min-width: 210px; font-size: 0.65rem; line-height: 1.1"
+          >
+            <div
+              class="text-info fw-bold border-bottom border-secondary mb-1 pb-1"
+              style="font-size: 0.55rem; text-transform: uppercase"
+            >
+              Ambiente Externo
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-thermometer-sun text-danger me-1"></i>Temp Ext:</span>
+              <span class="fw-bold">{{ s.temp_aht20 ?? '--' }}°C</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-droplet text-info me-1"></i>Umid Ext:</span>
+              <span class="fw-bold">{{ s.umidade_aht20 ?? '--' }}%</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-speedometer2 text-white me-1"></i>Pressão:</span>
+              <span class="fw-bold">{{ s.pressao_bmp280 ?? '--' }} hPa</span>
+            </div>
+
+            <div
+              class="text-info fw-bold border-bottom border-secondary mb-1 pb-1 mt-2"
+              style="font-size: 0.55rem; text-transform: uppercase"
+            >
+              Ambiente Interno
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-thermometer-snow text-primary me-1"></i>Temp Int 1:</span>
+              <span class="fw-bold">{{ s.temp_sht40 | number: '1.1-1' }}°C</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span
+                ><i class="bi bi-thermometer-snow text-primary-emphasis me-1"></i>Temp Int 2:</span
+              >
+              <span class="fw-bold">{{ s.temp_sht41 | number: '1.1-1' }}°C</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-droplet-half text-info me-1"></i>Umid Int:</span>
+              <span class="fw-bold">{{ s.umidade_sht40 | number: '1.1-1' }}%</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-wind text-warning me-1"></i>CO2/TVOC:</span>
+              <span class="fw-bold">{{ s.co2 ?? 0 }}/{{ s.tvoc ?? 0 }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-brightness-high text-warning me-1"></i>Luz:</span>
+              <span class="fw-bold"
+                >{{ s.luminosidade ?? 0 }}
+                <small class="text-muted" style="font-size: 0.5rem">(0=claro)</small></span
+              >
+            </div>
+
+            <div
+              class="text-info fw-bold border-bottom border-secondary mb-1 pb-1 mt-2"
+              style="font-size: 0.55rem; text-transform: uppercase"
+            >
+              Sistema
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-battery-full text-success me-1"></i>Bateria:</span>
+              <span class="fw-bold text-success">{{ s.tensao_bateria | number: '1.1-1' }}V</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span><i class="bi bi-lightning-charge text-warning me-1"></i>Compres:</span>
+              <span class="fw-bold">{{ s.tensao_compressor }}V / {{ s.corrente_compressor }}A</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span>
+                <i
+                  class="bi me-1"
+                  [ngClass]="
+                    s.sensor_porta
+                      ? 'bi-door-closed-fill text-success'
+                      : 'bi-door-open-fill text-danger'
+                  "
+                ></i>
+                Porta:
+              </span>
+              <span class="fw-bold" [class.text-danger]="!s.sensor_porta">
+                {{ s.sensor_porta ? 'FECHADA' : 'ABERTA' }}
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="footer-hover text-info bg-dark border-top border-secondary p-1 text-center"
+            style="font-size: 0.55rem; opacity: 0.7"
           >
             Clique dir. para gerenciar
           </div>
@@ -85,17 +174,16 @@
   <div class="modal-backdrop" (click)="showModal = false">
     <div class="modal-popup shadow-lg" (click)="$event.stopPropagation()">
       <div class="modal-header bg-primary text-white py-2 px-3">
-        <h6 class="modal-title m-0 text-white">Novo Equipamento</h6>
+        <h6 class="modal-title m-0 text-white" style="font-size: 0.9rem">Novo Equipamento</h6>
         <button
           type="button"
           class="btn-close btn-close-white"
           (click)="showModal = false"
         ></button>
       </div>
-
       <div class="modal-body p-3">
         <div class="mb-2">
-          <label class="small fw-bold mb-1">ID ESP32 (MAC):</label>
+          <label class="small fw-bold mb-1" style="font-size: 0.7rem">ID ESP32 (MAC):</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -104,7 +192,7 @@
           />
         </div>
         <div class="mb-3">
-          <label class="small fw-bold mb-1">Nome Local:</label>
+          <label class="small fw-bold mb-1" style="font-size: 0.7rem">Nome Local:</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -113,13 +201,22 @@
           />
         </div>
       </div>
-
       <div class="modal-footer py-2 bg-light">
-        <button type="button" class="btn btn-sm btn-secondary" (click)="showModal = false">
+        <button
+          type="button"
+          class="btn btn-sm btn-secondary"
+          style="font-size: 0.7rem"
+          (click)="showModal = false"
+        >
           Cancelar
         </button>
-        <button type="button" class="btn btn-sm btn-primary" (click)="salvarEquipamento()">
-          Salvar na Planta
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          style="font-size: 0.7rem"
+          (click)="salvarEquipamento()"
+        >
+          Salvar
         </button>
       </div>
     </div>

@@ -26,7 +26,7 @@
       25px 25px,
       contain;
     background-position: center, center;
-    transform-origin: 0 0; // Crucial para o zoom não bugar
+    transform-origin: 0 0;
     transition: transform 0.1s ease-out;
   }
 }
@@ -38,70 +38,106 @@
   align-items: center;
   cursor: pointer;
   z-index: 10;
+
   &:hover {
     z-index: 999 !important;
     .sensor-data-hover {
       display: block;
     }
   }
+
+  // ÍCONE DO CHIP MENOR
   i {
-    font-size: 2.2rem;
+    font-size: 1.8rem; // Reduzi de 2.2rem para 1.8rem
     color: #0d6efd;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
   }
+
   .sensor-label {
-    font-size: 0.7rem;
+    font-size: 0.6rem; // Reduzi de 0.7rem para 0.6rem
     font-weight: bold;
     background: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-top: -5px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-top: -3px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 }
 
+// CARD ULTRA-COMPACTO
 .sensor-data-hover {
-  width: 190px;
   display: none;
   position: absolute;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 180px;
-  background: #212529;
+  top: 0; // Alinhado ao topo do ícone
+  left: 38px; // Colado lateralmente
+  width: auto;
+  min-width: 210px; // Largura mínima reduzida para compactar
+  background: #1a1d20;
   color: white;
   border-radius: 8px;
-  font-size: 0.8rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  height: auto !important;
+  pointer-events: none;
+  transform-origin: top left;
+
   .header-hover {
     background: #0d6efd;
-    padding: 5px 10px;
+    padding: 4px 10px; // Padding menor
     border-radius: 8px 8px 0 0;
-    font-weight: bold;
   }
+
   .body-hover {
-    padding: 8px 10px;
-    p {
-      margin: 2px 0;
-      display: flex;
-      justify-content: space-between;
+    padding: 8px; // Padding interno reduzido de 12px para 8px
+    max-height: 60vh;
+    overflow-y: auto;
+
+    .d-flex {
+      margin-bottom: 2px !important; // Espaço mínimo entre linhas
+      padding-bottom: 1px;
+
+      // ÍCONES DENTRO DO CARD MENORES
+      i {
+        font-size: 0.75rem !important;
+        margin-right: 4px !important;
+      }
+
+      span:first-child {
+        margin-right: 10px;
+        color: rgba(255, 255, 255, 0.8);
+      }
     }
+
+    // Títulos das seções (Externo, Interno...)
+    .border-bottom.text-info {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      padding-bottom: 2px;
+      font-size: 0.55rem; // Fonte minúscula para os títulos
+    }
+  }
+
+  .footer-hover {
+    padding: 3px !important;
+    background: #111416;
   }
 }
 
+// RESTANTE DO CÓDIGO (Context Menu e Modais)
 .context-menu {
   position: absolute;
   background: white;
   border-radius: 8px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  width: 200px;
+  width: 180px;
   ul {
     list-style: none;
     margin: 0;
-    padding: 5px 0;
+    padding: 3px 0;
     li {
-      padding: 10px 15px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
       cursor: pointer;
       &:hover {
         background: #f0f7ff;
@@ -127,10 +163,11 @@
 
 .modal-popup {
   background: white;
-  width: 320px;
+  width: 300px;
   border-radius: 12px;
   animation: slideIn 0.3s ease-out;
 }
+
 @keyframes slideIn {
   from {
     transform: translateY(-20px);

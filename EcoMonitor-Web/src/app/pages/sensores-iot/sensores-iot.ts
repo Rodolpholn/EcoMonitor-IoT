@@ -51,11 +51,19 @@ export class SensoresIot implements OnInit {
             x: s.pos_x ?? s.posX ?? 0,
             y: s.pos_y ?? s.posY ?? 0,
             // Garante que o HTML receba os valores exatos da API
-            temp_ext: s.temp_aht20,
-            umid_ext: s.umidade_aht20,
-            temp_int: s.temp_sht40,
-            umid_int: s.umidade_sht40,
+            temp_aht20: s.temp_aht20,
+            umidade_aht20: s.umidade_aht20,
+            pressao_bmp280: s.pressao_bmp280,
+            temp_sht40: s.temp_sht40,
+            umidade_sht40: s.umidade_sht40,
+            temp_sht41: s.temp_sht41,
             co2: s.co2,
+            tvoc: s.tvoc,
+            luminosidade: s.luminosidade,
+            tensao_bateria: s.tensao_bateria,
+            corrente_compressor: s.corrente_compressor,
+            tensao_compressor: s.tensao_compressor,
+            sensor_porta: s.sensor_porta,
           }));
         }
       },
