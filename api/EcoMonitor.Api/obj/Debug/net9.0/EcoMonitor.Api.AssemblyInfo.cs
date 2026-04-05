@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd8acba4a0489d2ea39a7973978ec68b90a500a5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8d7dfbba57dee7e2655ba73a1d9cd6e20a70938")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

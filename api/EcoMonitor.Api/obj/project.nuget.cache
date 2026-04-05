@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "IOm2CxAJWI8=",
+  "dgSpecHash": "QP86YcE1rJo=",
   "success": true,
-  "projectFilePath": "c:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
+  "projectFilePath": "C:\\Users\\rodol\\OneDrive\\Documentos\\Dio\\CSharp\\EcoMonitor-IoT\\api\\EcoMonitor.Api\\EcoMonitor.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\rodol\\.nuget\\packages\\functions-csharp\\1.3.2\\functions-csharp.1.3.2.nupkg.sha512",
     "C:\\Users\\rodol\\.nuget\\packages\\gotrue-csharp\\4.2.7\\gotrue-csharp.4.2.7.nupkg.sha512",

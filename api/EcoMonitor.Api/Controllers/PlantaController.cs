@@ -20,23 +20,23 @@ namespace EcoMonitor.Api.Controllers
 
         // GET: api/Planta
         [HttpGet]
-        public async Task<ActionResult<PlantaModel>> GetPlanta()
+        public async Task<ActionResult> GetPlanta()
         {
             try
-    {
-        var result = await _supabaseClient.From<PlantaModel>().Get();
-        var planta = result.Models.FirstOrDefault(x => x.Id == 1);
+            {
+                var result = await _supabaseClient.From<PlantaModel>().Get();
+                var planta = result.Models.FirstOrDefault(x => x.Id == 1);
 
-        if (planta == null) 
-            return Ok(new { Id = 1, ImagemUrl = "" });
+                if (planta == null) 
+                    return Ok(new { Id = 1, ImagemUrl = "" });
 
-        // Forçamos o retorno explicitamente como JSON
-        return new JsonResult(planta);
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new { erro = ex.Message });
-    }
+                // Retornar objeto anônimo para evitar erro de serialização com propriedades do BaseModel
+                return Ok(new { Id = planta.Id, ImagemUrl = planta.ImagemUrl });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { erro = ex.Message });
+            }
         }
 
         // POST: api/Planta/update
