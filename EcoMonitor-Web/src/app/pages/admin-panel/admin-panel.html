@@ -1,0 +1,227 @@
+<div class="admin-wrapper">
+  <!-- Cabeçalho do Painel -->
+  <div class="admin-header">
+    <div class="d-flex align-items-center gap-3">
+      <div class="admin-icon-box">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <div>
+        <h4 class="mb-0 fw-bold">Painel Administrativo</h4>
+        <p class="mb-0 text-muted small">Gerencie usuários e configurações do sistema</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abas de Navegação -->
+  <div class="admin-tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'usuarios'" (click)="setTab('usuarios')">
+      <i class="bi bi-people-fill me-2"></i>Usuários
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'iot'" (click)="setTab('iot')">
+      <i class="bi bi-cpu-fill me-2"></i>Configurações IoT
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'sobre'" (click)="setTab('sobre')">
+      <i class="bi bi-info-circle-fill me-2"></i>Permissões
+    </button>
+  </div>
+
+  <!-- Conteúdo das Abas -->
+  <div class="admin-content">
+    <!-- ABA: USUÁRIOS -->
+    <div *ngIf="activeTab === 'usuarios'">
+      <div class="content-card">
+        <div class="content-card-header">
+          <i class="bi bi-person-plus-fill me-2 text-primary"></i>
+          <span>Adicionar Novo Usuário</span>
+        </div>
+
+        <div
+          *ngIf="message"
+          class="alert mt-3"
+          [ngClass]="isError ? 'alert-danger' : 'alert-success'"
+        >
+          <i class="bi me-2" [ngClass]="isError ? 'bi-x-circle-fill' : 'bi-check-circle-fill'"></i>
+          {{ message }}
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="mt-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-envelope me-1 text-muted"></i>Email do novo usuário
+            </label>
+            <input
+              type="email"
+              class="form-control"
+              name="email"
+              [(ngModel)]="email"
+              placeholder="usuario@exemplo.com"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-lock me-1 text-muted"></i>Senha inicial
+            </label>
+            <input
+              type="password"
+              class="form-control"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="Mínimo 6 caracteres"
+              required
+            />
+            <div class="form-text">O usuário poderá alterar a senha após o primeiro acesso.</div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-person-badge me-1 text-muted"></i>Nível de acesso
+            </label>
+            <div class="role-selector">
+              <label class="role-option" [class.selected]="role === 'client'">
+                <input type="radio" name="role" [(ngModel)]="role" value="client" />
+                <div class="role-card">
+                  <i class="bi bi-eye-fill text-info"></i>
+                  <span class="role-name">Cliente</span>
+                  <span class="role-desc">Visualiza Dashboard e IoT</span>
+                </div>
+              </label>
+              <label class="role-option" [class.selected]="role === 'admin'">
+                <input type="radio" name="role" [(ngModel)]="role" value="admin" />
+                <div class="role-card">
+                  <i class="bi bi-shield-fill-check text-warning"></i>
+                  <span class="role-name">Administrador</span>
+                  <span class="role-desc">Acesso total ao sistema</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-create" [disabled]="isLoading">
+            <span
+              *ngIf="isLoading"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <i *ngIf="!isLoading" class="bi bi-person-plus-fill me-2"></i>
+            {{ isLoading ? 'Criando...' : 'Criar Usuário' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ABA: CONFIGURAÇÕES IOT -->
+    <div *ngIf="activeTab === 'iot'">
+      <div class="content-card">
+        <div class="content-card-header">
+          <i class="bi bi-cpu-fill me-2 text-primary"></i>
+          <span>Configurações de IoT e Planta</span>
+        </div>
+        <p class="text-muted mt-3">
+          As configurações de sensores e planta são gerenciadas diretamente na tela de
+          <strong>Sensores IoT</strong>.
+        </p>
+
+        <div class="iot-guide">
+          <div class="guide-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h6>Acesse a tela de Sensores IoT</h6>
+              <p>
+                Clique em <strong>Sensores IoT</strong> no menu lateral para abrir o mapa interativo
+                da planta.
+              </p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h6>Upload da Planta Baixa</h6>
+              <p>
+                Clique com o <strong>botão direito</strong> em qualquer área vazia do mapa e
+                selecione <em>"Upload da Planta"</em> para carregar a imagem da planta.
+              </p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h6>Adicionar Equipamentos (Sensores)</h6>
+              <p>
+                Com a planta carregada, clique com o <strong>botão direito</strong> e selecione
+                <em>"Adicionar Equipamento"</em>. Informe o ID do ESP32 e o nome do local.
+              </p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h6>Editar ou Excluir Sensores</h6>
+              <p>
+                Clique com o <strong>botão direito</strong> sobre um ícone de sensor existente para
+                editar seu nome ou excluí-lo do mapa.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <a routerLink="/sensores-iot" class="btn btn-primary mt-3">
+          <i class="bi bi-cpu-fill me-2"></i>Ir para Sensores IoT
+        </a>
+      </div>
+    </div>
+
+    <!-- ABA: PERMISSÕES -->
+    <div *ngIf="activeTab === 'sobre'">
+      <div class="content-card">
+        <div class="content-card-header">
+          <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+          <span>Níveis de Permissão</span>
+        </div>
+        <p class="text-muted mt-3">Entenda o que cada nível de acesso pode fazer no sistema.</p>
+
+        <div class="permission-table mt-4">
+          <div class="perm-header">
+            <span>Funcionalidade</span>
+            <span class="text-center"><i class="bi bi-eye-fill text-info me-1"></i>Cliente</span>
+            <span class="text-center"
+              ><i class="bi bi-shield-fill-check text-warning me-1"></i>Admin</span
+            >
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-grid-1x2-fill me-2 text-muted"></i>Dashboard</span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-cpu-fill me-2 text-muted"></i>Visualizar Sensores IoT</span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-plus-circle me-2 text-muted"></i>Adicionar/Editar Sensores</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-upload me-2 text-muted"></i>Upload da Planta</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-people-fill me-2 text-muted"></i>Gerenciar Usuários</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+          <div class="perm-row">
+            <span><i class="bi bi-shield-lock-fill me-2 text-muted"></i>Painel Administrativo</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
+            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

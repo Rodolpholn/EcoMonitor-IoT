@@ -1,9 +1,47 @@
+<div class="dashboard-header p-3">
+  <h4 class="fw-bold">MONITORAMENTO GERAL DA PLANTA</h4>
+  <p class="text-muted small">Dados consolidados de todos os dispositivos</p>
+</div>
+
+<div class="dashboard-grid mb-5">
+  <div class="card-iot" [class.border-alert]="resumo.temperatura > 30">
+    <span class="label-iot">TEMPERATURA</span>
+    <div class="value-iot">{{ resumo.temperatura | number: '1.1-1' }}<small>°C</small></div>
+  </div>
+
+  <div class="card-iot" [class.border-alert]="resumo.umidade > 80">
+    <span class="label-iot">UMIDADE</span>
+    <div class="value-iot">{{ resumo.umidade | number: '1.1-1' }}<small>%</small></div>
+  </div>
+
+  <div class="card-iot">
+    <span class="label-iot">CO2</span>
+    <div class="value-iot">{{ resumo.co2 }}<small>ppm</small></div>
+  </div>
+
+  <div class="card-iot">
+    <span class="label-iot">TVOC</span>
+    <div class="value-iot">{{ resumo.tvoc }}<small>ppb</small></div>
+  </div>
+
+  <div class="card-iot">
+    <span class="label-iot">V. BAT</span>
+    <div class="value-iot">{{ resumo.v_bat | number: '1.1-1' }}<small>Vdc</small></div>
+  </div>
+
+  <div class="card-iot">
+    <span class="label-iot">CONEXÃO</span>
+    <div class="value-iot text-success">OK</div>
+    <div class="footer-status text-success"><span class="dot online"></span> ONLINE</div>
+  </div>
+</div>
+
 <div class="row g-3 g-md-4 mb-5">
   <div class="col-12">
-    <div class="card p-3 p-md-4 shadow-sm border-0" style="border-radius: 20px">
+    <div class="card p-3 p-md-4 shadow-sm border-0" style="border-radius: 20px; background: white">
       <h5 class="card-title text-primary fw-bold mb-3 d-flex align-items-center">
         <i class="bi bi-graph-up me-2"></i>
-        <span class="fs-6 fs-md-5">Histórico de Temperatura</span>
+        <span>Análise de Tendência (Últimas 24h)</span>
       </h5>
       <div class="chart-container" style="position: relative; height: 300px; width: 100%">
         <canvas #graficoTemp></canvas>
@@ -12,37 +50,42 @@
   </div>
 
   <div class="col-12">
-    <div class="card shadow-sm border-0" style="border-radius: 20px">
+    <div class="card shadow-sm border-0" style="border-radius: 20px; background: white">
       <div class="card-header bg-white border-0 pt-4 px-3 px-md-4">
-        <h5 class="fw-bold fs-6 fs-md-5"><i class="bi bi-list-check me-2"></i>Leituras Recentes</h5>
+        <h5 class="fw-bold"><i class="bi bi-clock-history me-2"></i>Logs de Sensores</h5>
       </div>
       <div class="card-body px-2 px-md-4">
         <div class="table-responsive">
-          <table class="table table-hover table-borderless align-middle" style="min-width: 400px">
+          <table class="table table-hover table-borderless align-middle" style="min-width: 600px">
             <thead class="table-light">
               <tr>
                 <th class="ps-3">Data/Hora</th>
-                <th>Temp.</th>
+                <th>Equipamento</th>
+                <th>Temp. (SHT40)</th>
                 <th>Umid.</th>
-                <th class="pe-3">LED</th>
+                <th>CO2</th>
+                <th>TVOC</th>
+                <th class="pe-3">Bateria</th>
               </tr>
             </thead>
             <tbody>
               @for (item of leituras; track item.id) {
                 <tr>
                   <td class="text-secondary small ps-3">
-                    {{ item.dataHora | date: 'dd/MM HH:mm' }}
+                    {{ item.data_hora | date: 'dd/MM HH:mm:ss' }}
                   </td>
-                  <td class="fw-bold text-dark">{{ item.temperatura }}°C</td>
-                  <td>{{ item.umidade }}%</td>
+                  <td>
+                    <span class="badge bg-primary-subtle text-primary">{{
+                      item.equipamento_id
+                    }}</span>
+                  </td>
+                  <td class="fw-bold">{{ item.temp_sht40 | number: '1.1-1' }}°C</td>
+                  <td>{{ item.umidade_sht40 }}%</td>
+                  <td>{{ item.co2 }} <small class="text-muted">ppm</small></td>
+                  <td>{{ item.tvoc }} <small class="text-muted">ppb</small></td>
                   <td class="pe-3">
-                    <span
-                      class="badge rounded-pill p-2"
-                      [class.bg-success-subtle]="item.ledLigado"
-                      [class.text-success]="item.ledLigado"
-                      [class.bg-danger-subtle]="!item.ledLigado"
-                    >
-                      <i class="bi bi-lightbulb" [class.text-success]="item.ledLigado"></i>
+                    <span [class.text-danger]="item.tensao_bateria < 11.5">
+                      {{ item.tensao_bateria | number: '1.2-2' }}V
                     </span>
                   </td>
                 </tr>

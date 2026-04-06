@@ -3,6 +3,7 @@ using EcoMonitor.Api;
 using Scalar.AspNetCore;
 using Supabase;
 using Microsoft.AspNetCore.Http.Features;
+using EcoMonitor.Api.Authentication;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -31,7 +32,16 @@ builder.Services.AddScoped<Supabase.Client>(_ =>
         AutoConnectRealtime = true
     }));
 
-// 4. CORS Super Flexível
+// 4. Autenticação e Autorização
+builder.Services.AddAuthentication("Supabase")
+    .AddScheme<SupabaseAuthenticationOptions, SupabaseAuthenticationHandler>("Supabase", null);
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+});
+
+// 5. CORS Super Flexível
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirTudo", policy =>
@@ -42,7 +52,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 5. Controllers com Ajuste de JSON
+// 6. Controllers com Ajuste de JSON
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -78,6 +88,7 @@ app.MapScalarApiReference(options =>
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

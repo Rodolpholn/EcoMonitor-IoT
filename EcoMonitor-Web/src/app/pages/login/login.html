@@ -3,29 +3,71 @@
     <div class="brand-box">
       <i class="bi bi-cpu logo-icon"></i>
       <h2>EcoMonitor</h2>
-      <p>Sua plataforma de monitoramento inteligente.</p>
+      <p>Plataforma de monitoramento inteligente de ambientes.</p>
+      <div class="info-badge">
+        <i class="bi bi-shield-lock-fill me-2"></i>
+        Acesso restrito — solicite suas credenciais ao administrador.
+      </div>
     </div>
   </div>
 
   <div class="side-form">
     <div class="form-box">
-      <h1>Welcome</h1>
-      <p class="subtitle">Login in to your account to continue</p>
+      <div class="logo-mobile mb-4 d-md-none text-center">
+        <i class="bi bi-cpu-fill text-primary" style="font-size: 2.5rem"></i>
+        <h3 class="text-primary fw-bold mt-1">EcoMonitor</h3>
+      </div>
 
-      <form>
-        <div class="input-group">
-          <input type="email" placeholder="Email" class="custom-input" />
+      <h1>Bem-vindo</h1>
+      <p class="subtitle">Entre com suas credenciais para continuar</p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="input-group-custom">
+          <i class="bi bi-envelope input-icon"></i>
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="Email"
+            class="custom-input"
+            required
+            autocomplete="email"
+          />
         </div>
-        <div class="input-group">
-          <input type="password" placeholder="Password" class="custom-input" />
+        <div class="input-group-custom">
+          <i class="bi bi-lock input-icon"></i>
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="Senha"
+            class="custom-input"
+            required
+            autocomplete="current-password"
+          />
         </div>
 
-        <a href="#" class="forgot-link">Forgot your password?</a>
-
-        <button type="submit" class="btn-login">LOG IN</button>
-
-        <p class="signup-text">Don't have an account? <a href="#">Sign Up</a></p>
+        <button type="submit" class="btn-login" [disabled]="isLoading">
+          <span
+            *ngIf="isLoading"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <i *ngIf="!isLoading" class="bi bi-box-arrow-in-right me-2"></i>
+          {{ isLoading ? 'Entrando...' : 'ENTRAR' }}
+        </button>
       </form>
+
+      <p class="footer-note mt-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Não possui acesso? Contate o administrador do sistema.
+      </p>
     </div>
   </div>
 </div>

@@ -7,15 +7,49 @@
 
 .side-blue {
   flex: 1;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #0d6efd 0%, #4facfe 60%, #00f2fe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   text-align: center;
+  padding: 2rem;
+
   @media (max-width: 768px) {
     display: none;
-  } // Esconde no celular como na foto 2
+  }
+}
+
+.brand-box {
+  .logo-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+  }
+
+  p {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+  }
+}
+
+.info-badge {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.85rem;
+  backdrop-filter: blur(4px);
+  display: inline-block;
 }
 
 .side-form {
@@ -24,52 +58,93 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2rem;
 }
 
 .form-box {
-  width: 80%;
+  width: 100%;
   max-width: 400px;
 
   h1 {
-    color: #333;
-    font-weight: bold;
+    color: #1a1a2e;
+    font-weight: 700;
+    font-size: 2rem;
     margin-bottom: 5px;
   }
+
   .subtitle {
     color: #888;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+}
+
+.input-group-custom {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 1rem;
+    pointer-events: none;
   }
 }
 
 .custom-input {
   width: 100%;
-  padding: 12px 20px;
-  margin-bottom: 15px;
-  border: 1px solid #e0e0e0;
+  padding: 13px 20px 13px 42px;
+  border: 1.5px solid #e0e0e0;
   border-radius: 25px;
   background: #f9f9f9;
   outline: none;
+  font-size: 0.95rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+
   &:focus {
     border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+    background: white;
   }
 }
 
 .btn-login {
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(to right, #4facfe, #007bff);
+  padding: 13px;
+  background: linear-gradient(135deg, #0d6efd, #4facfe);
   color: white;
   border: none;
   border-radius: 25px;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
-  margin-top: 20px;
-  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 20px rgba(13, 110, 253, 0.35);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(13, 110, 253, 0.45);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 }
 
-.forgot-link,
-.signup-text a {
-  color: #4facfe;
-  text-decoration: none;
-  font-size: 0.9rem;
+.footer-note {
+  color: #aaa;
+  font-size: 0.82rem;
+  text-align: center;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1rem;
 }

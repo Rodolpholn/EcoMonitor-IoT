@@ -10,9 +10,10 @@ import { Navbar } from './components/navbar/navbar';
 import { DashboardComponent } from './pages/dashboard/dashboard';
 import { Login } from './pages/login/login';
 import { SensoresIot } from './pages/sensores-iot/sensores-iot';
+import { AdminPanel } from './pages/admin-panel/admin-panel';
 
 @NgModule({
-  declarations: [App, Sidebar, Navbar, DashboardComponent, Login, SensoresIot],
+  declarations: [App, Sidebar, Navbar, DashboardComponent, Login, SensoresIot, AdminPanel],
   imports: [
     BrowserModule,
     AppRoutingModule,

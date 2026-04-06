@@ -4,9 +4,11 @@ using Postgrest;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcoMonitor.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PlantaController : ControllerBase
@@ -40,6 +42,7 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // POST: api/Planta/update
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost("update")]
         public async Task<ActionResult> UpdatePlanta([FromBody] PlantaModel planta)
         {

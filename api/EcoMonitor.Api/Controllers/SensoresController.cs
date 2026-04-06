@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System;
 using System.Linq; 
 using Postgrest.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcoMonitor.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/Sensores")]
     public class SensoresController : ControllerBase
@@ -59,6 +61,7 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // POST: api/Sensores
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
@@ -82,6 +85,7 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // DELETE: api/Sensores/{id}
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSensor(string id)
         {

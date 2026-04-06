@@ -1,6 +1,7 @@
 import { Component, HostListener, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { SensorService } from '../../services/sensor';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sensores-iot',
@@ -14,6 +15,9 @@ export class SensoresIot implements OnInit {
   // URLs e Configurações
   private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api';
   imagemPlantaUrl: string = '';
+
+  /** Controla se o usuário logado é admin (habilita menus de contexto) */
+  isAdmin = false;
 
   showMenu = false;
   showSensorMenu = false;
@@ -41,9 +45,15 @@ export class SensoresIot implements OnInit {
   constructor(
     private sensorService: SensorService,
     private http: HttpClient,
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
+    // Verifica se o usuário é admin para habilitar menus de contexto
+    this.authService.sessionReady$.pipe().subscribe((session) => {
+      this.isAdmin = session.role === 'admin';
+    });
+
     this.carregarSensores();
     this.carregarConfiguracaoPlanta();
 
