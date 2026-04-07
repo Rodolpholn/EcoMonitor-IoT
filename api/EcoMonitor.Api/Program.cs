@@ -40,20 +40,18 @@ builder.Services.AddAuthentication("Supabase")
 
 builder.Services.AddAuthorization(options =>
 {
-    // Esta policy exige que o usuário tenha a role 'admin' na tabela user_roles
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
 });
 
-// 5. CORS Ajustado para Produção/Railway
+// 5. CORS - CORREÇÃO CRÍTICA AQUI
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-              .SetIsOriginAllowed(_ => true) // Permite qualquer origem (Localhost ou Produção)
-              .AllowCredentials(); 
+        policy.SetIsOriginAllowed(_ => true) // Isso substitui o AllowAnyOrigin de forma segura para o .NET
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // Agora o AllowCredentials vai funcionar sem crashar
     });
 });
 
@@ -71,10 +69,10 @@ var app = builder.Build();
 
 // --- ORDEM DOS MIDDLEWARES (CRÍTICO) ---
 
-// CORS deve ser um dos primeiros para evitar bloqueio do navegador
+// CORS deve ser SEMPRE antes de Authentication/Authorization
 app.UseCors("AllowAll");
 
-// Middleware para Railway/HTTPS (ajusta o esquema vindo do Proxy)
+// Middleware para Railway/HTTPS
 app.Use((context, next) =>
 {
     if (context.Request.Headers.ContainsKey("X-Forwarded-Proto"))
@@ -90,9 +88,8 @@ app.MapScalarApiReference(options =>
     options.WithTitle("EcoMonitor API").WithTheme(ScalarTheme.Moon);
 });
 
-// Redirecionamento HTTPS desativado temporariamente se houver loop no Railway, 
-// mas geralmente mantido para segurança:
-app.UseHttpsRedirection();
+// No Railway, o redirecionamento HTTPS pode causar loop se não houver certificado no app
+// app.UseHttpsRedirection(); 
 
 app.UseAuthentication();
 app.UseAuthorization();
