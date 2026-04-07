@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("6d820cdb-c195-43fe-90cd-002cd472c804")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4246ed509fee570744c43469e0486adc89ff479")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fece9b7e3b8066c7952c62fdb8d1cfdded35f447")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
