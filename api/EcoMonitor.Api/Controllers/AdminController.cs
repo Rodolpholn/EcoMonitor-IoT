@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization; // Necessário para o JsonPropertyName
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EcoMonitor.Api.Models;
 using System.Collections.Generic;
@@ -36,7 +36,6 @@ namespace EcoMonitor.Api.Controllers
             public string Role { get; set; } = "client";
         }
 
-        // --- MAPEAMENTO EXPLÍCITO: FORÇA O C# A LER O "id" DO JSON ---
         private class AdminUserResponse
         {
             [JsonPropertyName("id")]
@@ -46,6 +45,7 @@ namespace EcoMonitor.Api.Controllers
             public string Email { get; set; } = string.Empty;
         }
 
+        // --- 1. CRIAR USUÁRIO ---
         [HttpPost("User")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -56,7 +56,6 @@ namespace EcoMonitor.Api.Controllers
 
             try
             {
-                // 1. Criar Usuário no Auth via Admin API
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("apikey", _serviceKey);
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _serviceKey);
@@ -77,39 +76,24 @@ namespace EcoMonitor.Api.Controllers
                     return BadRequest(new { mensagem = "Falha ao criar usuário no Auth.", detalhe = responseBody });
                 }
 
-                // Desserialização com mapeamento explícito
                 var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody);
 
                 if (createdUser == null || string.IsNullOrEmpty(createdUser.Id))
                 {
-                    return BadRequest(new { 
-                        mensagem = "O ID mapeado ainda está nulo.", 
-                        corpo_recebido = responseBody 
-                    });
+                    return BadRequest(new { mensagem = "O ID mapeado ainda está nulo.", corpo_recebido = responseBody });
                 }
 
-                // 2. Vincular Role na tabela 'user_roles'
                 var options = new Supabase.SupabaseOptions { AutoRefreshToken = false, AutoConnectRealtime = false };
                 var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
                 await adminClient.InitializeAsync();
 
                 var newUserRole = new UserRole
                 {
-                    Id = createdUser.Id, // Usando a propriedade mapeada
+                    Id = createdUser.Id,
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
-                try 
-                {
-                    await adminClient.From<UserRole>().Insert(newUserRole);
-                }
-                catch (Exception dbEx)
-                {
-                    return BadRequest(new { 
-                        mensagem = "Usuário criado no Auth, mas falhou ao salvar a Role no banco.", 
-                        erro_banco = dbEx.Message 
-                    });
-                }
+                await adminClient.From<UserRole>().Insert(newUserRole);
 
                 return Ok(new { 
                     mensagem = "Usuário e Role criados com sucesso!", 
@@ -120,11 +104,61 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { 
-                    mensagem = "Erro crítico no processo.", 
-                    detalhe = ex.Message,
-                    stack = ex.StackTrace 
-                });
+                return BadRequest(new { mensagem = "Erro crítico.", detalhe = ex.Message });
+            }
+        }
+
+        // --- 2. LISTAR USUÁRIOS ---
+        [HttpGet("Users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            try
+            {
+                var options = new Supabase.SupabaseOptions { AutoRefreshToken = false, AutoConnectRealtime = false };
+                var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
+                await adminClient.InitializeAsync();
+
+                // Busca todos os registros da tabela user_roles
+                var response = await adminClient.From<UserRole>().Get();
+                return Ok(response.Models);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = "Erro ao listar usuários.", detalhe = ex.Message });
+            }
+        }
+
+        // --- 3. EXCLUIR USUÁRIO ---
+        [HttpDelete("User/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                // Deletar no Supabase Auth (via API Admin)
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("apikey", _serviceKey);
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _serviceKey);
+
+                var response = await httpClient.DeleteAsync($"{_supabaseUrl}/auth/v1/admin/users/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetail = await response.Content.ReadAsStringAsync();
+                    return BadRequest(new { mensagem = "Erro ao deletar no Auth.", detalhe = errorDetail });
+                }
+
+                // Deletar na tabela user_roles
+                var options = new Supabase.SupabaseOptions { AutoRefreshToken = false, AutoConnectRealtime = false };
+                var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
+                await adminClient.InitializeAsync();
+
+                await adminClient.From<UserRole>().Where(x => x.Id == id).Delete();
+
+                return Ok(new { mensagem = "Usuário removido com sucesso de todas as bases!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = "Erro interno ao deletar.", detalhe = ex.Message });
             }
         }
     }
