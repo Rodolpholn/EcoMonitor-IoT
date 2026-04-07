@@ -8,9 +8,9 @@ namespace EcoMonitor.Api.Models
     public class UserRole : BaseModel
     {
         [PrimaryKey("id", false)]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [Column("role")]
-        public string Role { get; set; }
+        public string Role { get; set; } = string.Empty;
     }
 }

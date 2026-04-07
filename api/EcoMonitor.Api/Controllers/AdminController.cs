@@ -25,6 +25,7 @@ namespace EcoMonitor.Api.Controllers
         {
             _configuration = configuration;
             _supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
+            // No Railway, isso lê a variável Supabase__ServiceRoleKey
             _serviceKey = _configuration["Supabase:ServiceRoleKey"] ?? "";
         }
 
@@ -35,9 +36,9 @@ namespace EcoMonitor.Api.Controllers
             public string Role { get; set; } = "client";
         }
 
-        // Classe ajustada para bater com o retorno do Supabase Admin API
         private class AdminUserResponse
         {
+            // O Supabase Auth Admin API retorna o ID em letras minúsculas
             public string id { get; set; } = string.Empty;
             public string email { get; set; } = string.Empty;
         }
@@ -47,7 +48,7 @@ namespace EcoMonitor.Api.Controllers
         {
             if (string.IsNullOrEmpty(_serviceKey) || _serviceKey.Contains("COLOQUE"))
             {
-                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada corretamente no appsettings.json." });
+                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada corretamente. Verifique as variáveis no Railway." });
             }
 
             try
@@ -61,12 +62,11 @@ namespace EcoMonitor.Api.Controllers
                 {
                     email = request.Email,
                     password = request.Password,
-                    email_confirm = true // Usuário já nasce confirmado
+                    email_confirm = true 
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(authPayload), Encoding.UTF8, "application/json");
                 
-                // Endpoint correto de administração do GoTrue (Auth)
                 var response = await httpClient.PostAsync($"{_supabaseUrl}/auth/v1/admin/users", content);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -75,27 +75,31 @@ namespace EcoMonitor.Api.Controllers
                     return BadRequest(new { mensagem = "Falha ao criar usuário no Auth.", detalhe = responseBody });
                 }
 
-                // O Supabase retorna o objeto do usuário diretamente
-                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody);
+                // Usamos JsonSerializerOptions para garantir que ele ache o "id" mesmo se vier diferente do esperado
+                var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
 
+                // LOG DE SEGURANÇA: Se o ID vier nulo, precisamos saber o que o Supabase cuspiu
                 if (createdUser == null || string.IsNullOrEmpty(createdUser.id))
                 {
-                    return BadRequest(new { mensagem = "Usuário criado, mas não foi possível obter o ID de retorno." });
+                    return BadRequest(new { 
+                        mensagem = "Usuário criado no Auth, mas o ID veio nulo no retorno.", 
+                        corpo_recebido = responseBody 
+                    });
                 }
 
                 // 2. Vincular Role na tabela 'user_roles'
-                // Criamos um cliente Supabase temporário com a Service Key para bypassar o RLS
                 var options = new Supabase.SupabaseOptions { AutoRefreshToken = false, AutoConnectRealtime = false };
                 var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
                 await adminClient.InitializeAsync();
 
                 var newUserRole = new UserRole
                 {
-                    Id = createdUser.id,
+                    Id = createdUser.id, // Aqui garantimos que o ID do Auth vai para a tabela
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
-                // Inserção na tabela pública.user_roles
+                // Inserção na tabela user_roles
                 await adminClient.From<UserRole>().Insert(newUserRole);
 
                 return Ok(new { 
