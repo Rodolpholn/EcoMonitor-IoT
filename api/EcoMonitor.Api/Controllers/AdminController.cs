@@ -38,7 +38,6 @@ namespace EcoMonitor.Api.Controllers
 
         private class AdminUserResponse
         {
-            // O Supabase Auth Admin API retorna o ID em letras minúsculas
             public string id { get; set; } = string.Empty;
             public string email { get; set; } = string.Empty;
         }
@@ -48,7 +47,7 @@ namespace EcoMonitor.Api.Controllers
         {
             if (string.IsNullOrEmpty(_serviceKey) || _serviceKey.Contains("COLOQUE"))
             {
-                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada corretamente. Verifique as variáveis no Railway." });
+                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada corretamente no Railway." });
             }
 
             try
@@ -66,7 +65,6 @@ namespace EcoMonitor.Api.Controllers
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(authPayload), Encoding.UTF8, "application/json");
-                
                 var response = await httpClient.PostAsync($"{_supabaseUrl}/auth/v1/admin/users", content);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -75,17 +73,12 @@ namespace EcoMonitor.Api.Controllers
                     return BadRequest(new { mensagem = "Falha ao criar usuário no Auth.", detalhe = responseBody });
                 }
 
-                // Usamos JsonSerializerOptions para garantir que ele ache o "id" mesmo se vier diferente do esperado
                 var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
 
-                // LOG DE SEGURANÇA: Se o ID vier nulo, precisamos saber o que o Supabase cuspiu
                 if (createdUser == null || string.IsNullOrEmpty(createdUser.id))
                 {
-                    return BadRequest(new { 
-                        mensagem = "Usuário criado no Auth, mas o ID veio nulo no retorno.", 
-                        corpo_recebido = responseBody 
-                    });
+                    return BadRequest(new { mensagem = "Usuário criado, mas ID não retornado.", corpo = responseBody });
                 }
 
                 // 2. Vincular Role na tabela 'user_roles'
@@ -95,12 +88,23 @@ namespace EcoMonitor.Api.Controllers
 
                 var newUserRole = new UserRole
                 {
-                    Id = createdUser.id, // Aqui garantimos que o ID do Auth vai para a tabela
+                    Id = createdUser.id,
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
-                // Inserção na tabela user_roles
-                await adminClient.From<UserRole>().Insert(newUserRole);
+                // TRY-CATCH ESPECÍFICO PARA O BANCO DE DADOS
+                try 
+                {
+                    await adminClient.From<UserRole>().Insert(newUserRole);
+                }
+                catch (Exception dbEx)
+                {
+                    // Se o usuário foi criado no Auth mas falhou aqui, retornamos o erro do Banco
+                    return BadRequest(new { 
+                        mensagem = "Usuário criado no Auth, mas falhou ao salvar a Role no banco.", 
+                        erro_banco = dbEx.Message 
+                    });
+                }
 
                 return Ok(new { 
                     mensagem = "Usuário e Role criados com sucesso!", 
@@ -111,11 +115,10 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
-                // return BadRequest(new { mensagem = "Erro interno ao processar criação.", detalhe = ex.Message });
                 return BadRequest(new { 
-                mensagem = "Erro interno ao processar criação.", 
-                detalhe = ex.Message,
-                stack = ex.StackTrace 
+                    mensagem = "Erro crítico no processo.", 
+                    detalhe = ex.Message,
+                    stack = ex.StackTrace 
                 });
             }
         }
