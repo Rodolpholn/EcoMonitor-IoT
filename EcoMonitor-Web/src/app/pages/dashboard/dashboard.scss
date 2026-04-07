@@ -1,4 +1,4 @@
-// CONTAINER DO MAPA (PLANTA BAIXA)
+// 1. CONTAINER DO MAPA (PLANTA BAIXA) - Mantido
 .map-container {
   width: 100%;
   height: calc(100vh - 100px);
@@ -20,219 +20,202 @@
     position: relative;
     padding: 200px;
     background-color: #ffffff;
-
-    // CONFIGURAÇÃO DA IMAGEM DA PLANTA
     background-repeat: no-repeat;
     background-position: center center;
     background-size: contain;
-
     transform-origin: 0 0;
     transition: transform 0.1s ease-out;
   }
 }
 
-// ÍCONES DOS SENSORES NO MAPA
-.sensor-icon {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  z-index: 10;
+// 2. NOVO LAYOUT DASHBOARD (ESTILO SAAS / MODERN)
+.admin-wrapper {
+  background-color: #f8fafc; // Fundo cinza azulado muito leve para os cards saltarem
+  min-height: 100vh;
+  padding: 24px;
+}
+
+// Grid Assimétrico: Coluna esquerda (1 parte), Coluna direita (2.5 partes)
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr;
+  gap: 24px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr; // Fica uma coluna só em tablets e mobile
+  }
+}
+
+// Estilo Glass-Card (Bordas de 28px e Sombras Suaves)
+.glass-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 15px 35px rgba(51, 65, 85, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
 
   &:hover {
-    z-index: 999 !important;
-    .sensor-data-hover {
-      display: block;
-    }
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(51, 65, 85, 0.1);
   }
 
-  i {
-    font-size: 1.8rem;
-    color: #0d6efd;
-    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-  }
-
-  .sensor-label {
-    font-size: 0.6rem;
-    font-weight: bold;
-    background: white;
-    padding: 1px 6px;
-    border-radius: 8px;
-    margin-top: -3px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-}
-
-// CARD DE HOVER (DENTRO DO MAPA)
-.sensor-data-hover {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 38px;
-  min-width: 210px;
-  background: #1a1d20;
-  color: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-  pointer-events: none;
-
-  .header-hover {
-    background: #0d6efd;
-    padding: 4px 10px;
-    border-radius: 8px 8px 0 0;
-  }
-
-  .body-hover {
-    padding: 8px;
-    .d-flex {
-      margin-bottom: 2px !important;
-      padding-bottom: 1px;
-      i {
-        font-size: 0.75rem !important;
-        margin-right: 4px !important;
-      }
-      span:first-child {
-        margin-right: 10px;
-        color: rgba(255, 255, 255, 0.8);
-      }
-    }
-    .text-info {
-      margin-top: 6px;
-      margin-bottom: 4px;
-      font-size: 0.55rem;
-    }
-  }
-}
-
-// --- NOVOS CARDS ESTILO DASHBOARD (CONFORME FOTOS) ---
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  padding: 15px;
-  @media (min-width: 992px) {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-}
-
-.card-iot {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border: 1px solid #eee;
-
-  // Linha lateral vermelha para alertas
-  &.border-alert {
-    border-left: 5px solid #dc3545;
-    .label-iot {
-      color: #dc3545;
-    }
-  }
-
-  .label-iot {
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #6c757d;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  .value-iot {
-    font-size: 2.4rem;
-    font-weight: 700;
-    color: #212529;
-
-    small {
-      font-size: 1rem;
-      color: #adb5bd;
-      margin-left: 2px;
-    }
-  }
-
-  .footer-status {
-    margin-top: 15px;
-    font-weight: bold;
+  .card-header-modern {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 5px;
+    margin-bottom: 15px;
 
-    .dot {
-      height: 10px;
-      width: 10px;
-      border-radius: 50%;
-      &.online {
-        background-color: #28a745;
-      }
+    h6 {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .badge-pill {
+      border-radius: 50px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
   }
 }
 
-// MENUS E MODAIS
-.context-menu {
-  position: absolute;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  width: 180px;
+// Container de Círculos / Mini Indicadores (Ambiente)
+.circular-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
 
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 3px 0;
-    li {
-      padding: 8px 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      &:hover {
-        background: #f0f7ff;
-        color: #0d6efd;
-      }
-      &.text-danger:hover {
-        background: #fff5f5;
-      }
+  .circle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .circle-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .circle-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
     }
   }
 }
 
+// Estados de Alerta e Glow
+.border-danger-glow {
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15) !important;
+  animation: pulse-red-glow 2s infinite;
+}
+
+// Pontos de Status Dinâmicos
+.dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  &.online {
+    background-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    animation: blink-soft 2s infinite;
+  }
+  &.offline {
+    background-color: #ef4444;
+  }
+}
+
+// 3. ANIMAÇÕES REFINADAS
+@keyframes pulse-red-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes blink-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Estilo de Tabela e Tipografia
+.table-borderless {
+  thead th {
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    border: none;
+  }
+  tbody td {
+    padding: 12px 8px;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+.extra-small {
+  font-size: 0.65rem;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+
+// Barra de progresso de temperatura
+.temp-progress-bar {
+  .progress {
+    background-color: #f1f5f9;
+  }
+}
+
+// Dashboard Header responsivo
+.dashboard-header {
+  h4 {
+    font-size: 1.1rem;
+
+    @media (max-width: 576px) {
+      font-size: 0.95rem;
+    }
+  }
+}
+
+// Glass card padding reduzido em mobile
+@media (max-width: 576px) {
+  .glass-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
+
+// Modais e Context Menu (Mantido conforme original)
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
-}
-
-.modal-popup {
-  background: white;
-  width: 320px;
-  border-radius: 12px;
-  overflow: hidden;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }

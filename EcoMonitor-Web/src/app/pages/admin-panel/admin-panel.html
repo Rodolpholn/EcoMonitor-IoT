@@ -117,15 +117,20 @@
           <table class="table table-hover align-middle">
             <thead class="table-light">
               <tr>
-                <th class="text-muted small fw-bold">USUÁRIO (E-MAIL)</th>
+                <th class="text-muted small fw-bold">USUÁRIO</th>
                 <th class="text-muted small fw-bold text-center">NÍVEL</th>
                 <th class="text-muted small fw-bold text-end">AÇÕES</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let user of userList">
-                <td class="text-truncate" style="max-width: 250px" [title]="user.Id">
-                  <code class="text-muted small">{{ user.Id }}</code>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark">{{ user.Email }}</span>
+                    <small class="text-muted font-monospace" style="font-size: 0.75rem">{{
+                      user.Id
+                    }}</small>
+                  </div>
                 </td>
                 <td class="text-center">
                   <span
@@ -148,6 +153,7 @@
                     class="btn btn-outline-danger btn-sm"
                     (click)="deleteUser(user.Id)"
                     [disabled]="isLoading"
+                    title="Excluir Usuário"
                   >
                     <i class="bi bi-trash3-fill"></i>
                   </button>
@@ -174,50 +180,6 @@
           As configurações de sensores e planta são gerenciadas diretamente na tela de
           <strong>Sensores IoT</strong>.
         </p>
-
-        <div class="iot-guide">
-          <div class="guide-step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h6>Acesse a tela de Sensores IoT</h6>
-              <p>
-                Clique em <strong>Sensores IoT</strong> no menu lateral para abrir o mapa interativo
-                da planta.
-              </p>
-            </div>
-          </div>
-          <div class="guide-step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h6>Upload da Planta Baixa</h6>
-              <p>
-                Clique com o <strong>botão direito</strong> em qualquer área vazia do mapa e
-                selecione <em>"Upload da Planta"</em> para carregar a imagem da planta.
-              </p>
-            </div>
-          </div>
-          <div class="guide-step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h6>Adicionar Equipamentos (Sensores)</h6>
-              <p>
-                Com a planta carregada, clique com o <strong>botão direito</strong> e selecione
-                <em>"Adicionar Equipamento"</em>. Informe o ID do ESP32 e o nome do local.
-              </p>
-            </div>
-          </div>
-          <div class="guide-step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-              <h6>Editar ou Excluir Sensores</h6>
-              <p>
-                Clique com o <strong>botão direito</strong> sobre um ícone de sensor existente para
-                editar seu nome ou excluí-lo do mapa.
-              </p>
-            </div>
-          </div>
-        </div>
-
         <a routerLink="/sensores-iot" class="btn btn-primary mt-3">
           <i class="bi bi-cpu-fill me-2"></i>Ir para Sensores IoT
         </a>
@@ -229,47 +191,6 @@
         <div class="content-card-header">
           <i class="bi bi-info-circle-fill me-2 text-primary"></i>
           <span>Níveis de Permissão</span>
-        </div>
-        <p class="text-muted mt-3">Entenda o que cada nível de acesso pode fazer no sistema.</p>
-
-        <div class="permission-table mt-4">
-          <div class="perm-header">
-            <span>Funcionalidade</span>
-            <span class="text-center"><i class="bi bi-eye-fill text-info me-1"></i>Cliente</span>
-            <span class="text-center"
-              ><i class="bi bi-shield-fill-check text-warning me-1"></i>Admin</span
-            >
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-grid-1x2-fill me-2 text-muted"></i>Dashboard</span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-cpu-fill me-2 text-muted"></i>Visualizar Sensores IoT</span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-plus-circle me-2 text-muted"></i>Adicionar/Editar Sensores</span>
-            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-upload me-2 text-muted"></i>Upload da Planta</span>
-            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-people-fill me-2 text-muted"></i>Gerenciar Usuários</span>
-            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
-          <div class="perm-row">
-            <span><i class="bi bi-shield-lock-fill me-2 text-muted"></i>Painel Administrativo</span>
-            <span class="text-center"><i class="bi bi-x-circle-fill text-danger"></i></span>
-            <span class="text-center"><i class="bi bi-check-circle-fill text-success"></i></span>
-          </div>
         </div>
       </div>
     </div>

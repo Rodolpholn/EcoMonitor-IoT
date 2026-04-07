@@ -1,1 +1,14 @@
-<p>navbar works!</p>
+<nav
+  class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 d-none d-md-flex"
+>
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1 text-secondary fw-light">EcoMonitor IoT</span>
+
+    <div class="ms-auto d-flex align-items-center" *ngIf="session$ | async as session">
+      <span class="me-3 fw-bold text-primary" *ngIf="session.user"
+        >Olá, {{ session.user.email }}</span
+      >
+      <i class="bi bi-person-circle fs-3 text-primary"></i>
+    </div>
+  </div>
+</nav>

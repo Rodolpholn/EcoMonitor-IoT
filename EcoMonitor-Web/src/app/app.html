@@ -1,59 +1,8 @@
 <div class="d-flex" id="wrapper" *ngIf="(session$ | async)?.initialized && router.url !== '/login'">
-  <div
-    class="bg-primary text-white shadow d-none d-md-block"
-    id="sidebar-wrapper"
-    style="width: 250px; min-height: 100vh"
-  >
-    <div class="sidebar-heading p-4 fs-4 fw-bold border-bottom border-light">
-      <i class="bi bi-cpu-fill me-2"></i>EcoMonitor
-    </div>
-    <div class="list-group list-group-flush p-2" *ngIf="session$ | async as session">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active-desktop"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
-      >
-        <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
-      </a>
-      <a
-        routerLink="/sensores-iot"
-        routerLinkActive="active-desktop"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
-      >
-        <i class="bi bi-cpu-fill me-2"></i> Sensores IoT
-      </a>
-      <a
-        *ngIf="session.role === 'admin'"
-        routerLink="/admin-panel"
-        routerLinkActive="active-desktop"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
-      >
-        <i class="bi bi-people-fill me-2"></i> Painel Admin
-      </a>
-      <a
-        (click)="logout()"
-        style="cursor: pointer"
-        class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mt-5 text-warning"
-      >
-        <i class="bi bi-door-open-fill me-2"></i> Sair
-      </a>
-    </div>
-  </div>
+  <app-sidebar></app-sidebar>
 
   <div id="page-content-wrapper" class="flex-grow-1 bg-light overflow-auto">
-    <nav
-      class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 d-none d-md-flex"
-    >
-      <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1 text-secondary">EcoMonitor IoT</span>
-        <div class="ms-auto d-flex align-items-center" *ngIf="session$ | async as session">
-          <span class="me-3 fw-bold text-primary" *ngIf="session.user"
-            >Olá, {{ session.user.email }}</span
-          >
-          <i class="bi bi-person-circle fs-3 text-primary"></i>
-        </div>
-      </div>
-    </nav>
+    <app-navbar></app-navbar>
 
     <div class="container-fluid p-2 p-md-4">
       <router-outlet></router-outlet>

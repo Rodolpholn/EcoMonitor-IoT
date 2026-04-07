@@ -16,6 +16,9 @@ namespace EcoMonitor.Api.Controllers
     public class SensoresController : ControllerBase
     {
         private readonly Supabase.Client _supabaseClient;
+        
+        // Chave de segurança para os dispositivos IoT (Mesma que colocar no ESP32)
+        private const string IOT_API_KEY = "Thermofrio_Seguranca_Maxima_2026_@#";
 
         public SensoresController(Supabase.Client supabaseClient)
         {
@@ -36,7 +39,6 @@ namespace EcoMonitor.Api.Controllers
                     Nome = s.Nome,
                     PosX = s.PosX,
                     PosY = s.PosY,
-                    // Novos campos da sua ESP32
                     Co2 = s.Co2,
                     Tvoc = s.Tvoc,
                     TempAht20 = s.TempAht20,
@@ -61,12 +63,19 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // POST: api/Sensores
-        [Authorize(Policy = "AdminOnly")]
+        // Alterado para AllowAnonymous para permitir o ESP32, mas validado via API Key
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
             try
             {
+                // Validação de Segurança via Header Customizada
+                if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
+                {
+                    return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou ausente." });
+                }
+
                 var options = new QueryOptions 
                 { 
                     Returning = QueryOptions.ReturnType.Minimal 
@@ -76,11 +85,11 @@ namespace EcoMonitor.Api.Controllers
                     .From<SensorModel>()
                     .Upsert(sensor, options);
 
-                return Ok(new { mensagem = "Sensor salvo com sucesso!", id = sensor.Id });
+                return Ok(new { mensagem = "Dados do sensor recebidos com sucesso!", id = sensor.Id });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro ao salvar sensor", detalhe = ex.Message });
+                return BadRequest(new { mensagem = "Erro ao processar dados do sensor", detalhe = ex.Message });
             }
         }
 
