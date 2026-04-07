@@ -47,10 +47,11 @@ builder.Services.AddAuthorization(options =>
 // 5. CORS Ajustado para Produção/Railway
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PermitirTudo", policy =>
+    options.AddPolicy("AllowAll", builder =>
     {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
+        builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
               .SetIsOriginAllowed(_ => true) // Permite qualquer origem (Localhost ou Produção)
               .AllowCredentials(); 
     });
@@ -71,7 +72,7 @@ var app = builder.Build();
 // --- ORDEM DOS MIDDLEWARES (CRÍTICO) ---
 
 // CORS deve ser um dos primeiros para evitar bloqueio do navegador
-app.UseCors("PermitirTudo");
+app.UseCors("AllowAll");
 
 // Middleware para Railway/HTTPS (ajusta o esquema vindo do Proxy)
 app.Use((context, next) =>
