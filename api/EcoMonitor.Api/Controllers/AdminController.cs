@@ -25,7 +25,6 @@ namespace EcoMonitor.Api.Controllers
         {
             _configuration = configuration;
             _supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
-            // No Railway, isso lê a variável Supabase__ServiceRoleKey
             _serviceKey = _configuration["Supabase:ServiceRoleKey"] ?? "";
         }
 
@@ -36,7 +35,14 @@ namespace EcoMonitor.Api.Controllers
             public string Role { get; set; } = "client";
         }
 
+        // --- AJUSTE NAS CLASSES DE RESPOSTA PARA MAPEAREM O JSON DO SUPABASE ---
         private class AdminUserResponse
+        {
+            // O Supabase retorna o usuário dentro de uma propriedade "user"
+            public UserData user { get; set; } = new();
+        }
+
+        private class UserData
         {
             public string id { get; set; } = string.Empty;
             public string email { get; set; } = string.Empty;
@@ -45,14 +51,14 @@ namespace EcoMonitor.Api.Controllers
         [HttpPost("User")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            if (string.IsNullOrEmpty(_serviceKey) || _serviceKey.Contains("COLOQUE"))
+            if (string.IsNullOrEmpty(_serviceKey))
             {
-                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada corretamente no Railway." });
+                return StatusCode(500, new { mensagem = "ServiceRoleKey não configurada no Railway." });
             }
 
             try
             {
-                // 1. Criar Usuário no Auth do Supabase via Admin API
+                // 1. Criar Usuário no Auth via Admin API
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("apikey", _serviceKey);
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _serviceKey);
@@ -74,11 +80,16 @@ namespace EcoMonitor.Api.Controllers
                 }
 
                 var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
+                
+                // Mapeia para a nova estrutura AdminUserResponse -> user -> id
+                var result = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
 
-                if (createdUser == null || string.IsNullOrEmpty(createdUser.id))
+                if (result?.user == null || string.IsNullOrEmpty(result.user.id))
                 {
-                    return BadRequest(new { mensagem = "Usuário criado, mas ID não retornado.", corpo = responseBody });
+                    return BadRequest(new { 
+                        mensagem = "Usuário criado no Auth, mas o ID não foi encontrado no JSON.", 
+                        corpo_recebido = responseBody 
+                    });
                 }
 
                 // 2. Vincular Role na tabela 'user_roles'
@@ -88,18 +99,16 @@ namespace EcoMonitor.Api.Controllers
 
                 var newUserRole = new UserRole
                 {
-                    Id = createdUser.id,
+                    Id = result.user.id, // Agora pegando corretamente de result.user.id
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
-                // TRY-CATCH ESPECÍFICO PARA O BANCO DE DADOS
                 try 
                 {
                     await adminClient.From<UserRole>().Insert(newUserRole);
                 }
                 catch (Exception dbEx)
                 {
-                    // Se o usuário foi criado no Auth mas falhou aqui, retornamos o erro do Banco
                     return BadRequest(new { 
                         mensagem = "Usuário criado no Auth, mas falhou ao salvar a Role no banco.", 
                         erro_banco = dbEx.Message 
@@ -108,8 +117,8 @@ namespace EcoMonitor.Api.Controllers
 
                 return Ok(new { 
                     mensagem = "Usuário e Role criados com sucesso!", 
-                    userId = createdUser.id,
-                    email = createdUser.email,
+                    userId = result.user.id,
+                    email = result.user.email,
                     role = newUserRole.Role 
                 });
             }
