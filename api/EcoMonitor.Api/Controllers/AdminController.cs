@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EcoMonitor.Api.Models;
 using System.Collections.Generic;
+using System.Linq; // Necessário para o .Select()
 
 namespace EcoMonitor.Api.Controllers
 {
@@ -27,7 +28,6 @@ namespace EcoMonitor.Api.Controllers
             _configuration = configuration;
             _supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
             
-            // Tenta ler de diferentes formatos de chave comuns no Railway
             _serviceKey = _configuration["Supabase:ServiceRoleKey"] 
                           ?? _configuration["Supabase__ServiceRoleKey"] 
                           ?? "";
@@ -49,7 +49,6 @@ namespace EcoMonitor.Api.Controllers
             public string Email { get; set; } = string.Empty;
         }
 
-        // --- 1. CRIAR USUÁRIO ---
         [HttpPost("User")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -112,7 +111,7 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
-        // --- 2. LISTAR USUÁRIOS (Corrigido para evitar Erro 500) ---
+        // --- 2. LISTAR USUÁRIOS (CORREÇÃO DEFINITIVA DO ERRO 500) ---
         [HttpGet("Users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -122,21 +121,26 @@ namespace EcoMonitor.Api.Controllers
                 var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
                 await adminClient.InitializeAsync();
 
-                // O SEGREDO: .Select("id, role") evita que o C# busque colunas que não existem
+                // Busca os dados do Supabase
                 var response = await adminClient.From<UserRole>()
                                                 .Select("id, role")
                                                 .Get();
 
-                return Ok(response.Models);
+                // PROJEÇÃO (DTO): Criamos uma lista simples com apenas os dados necessários.
+                // Isso evita que o JSON tente ler propriedades internas da biblioteca Supabase.
+                var listaLimpa = response.Models.Select(u => new {
+                    Id = u.Id,
+                    Role = u.Role
+                }).ToList();
+
+                return Ok(listaLimpa);
             }
             catch (Exception ex)
             {
-                // Retorna o erro real para você ver no navegador
-                return StatusCode(500, new { mensagem = "Erro ao listar usuários no banco.", detalhe = ex.Message });
+                return StatusCode(500, new { mensagem = "Erro ao processar lista de usuários.", detalhe = ex.Message });
             }
         }
 
-        // --- 3. EXCLUIR USUÁRIO ---
         [HttpDelete("User/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
