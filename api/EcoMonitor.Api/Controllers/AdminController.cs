@@ -35,14 +35,8 @@ namespace EcoMonitor.Api.Controllers
             public string Role { get; set; } = "client";
         }
 
-        // --- AJUSTE NAS CLASSES DE RESPOSTA PARA MAPEAREM O JSON DO SUPABASE ---
+        // --- CLASSE AJUSTADA: MAPEIA O ID DIRETAMENTE DA RAIZ DO JSON ---
         private class AdminUserResponse
-        {
-            // O Supabase retorna o usuário dentro de uma propriedade "user"
-            public UserData user { get; set; } = new();
-        }
-
-        private class UserData
         {
             public string id { get; set; } = string.Empty;
             public string email { get; set; } = string.Empty;
@@ -81,13 +75,13 @@ namespace EcoMonitor.Api.Controllers
 
                 var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 
-                // Mapeia para a nova estrutura AdminUserResponse -> user -> id
-                var result = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
+                // Mapeia para a estrutura plana (id na raiz)
+                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
 
-                if (result?.user == null || string.IsNullOrEmpty(result.user.id))
+                if (createdUser == null || string.IsNullOrEmpty(createdUser.id))
                 {
                     return BadRequest(new { 
-                        mensagem = "Usuário criado no Auth, mas o ID não foi encontrado no JSON.", 
+                        mensagem = "Usuário criado no Auth, mas o ID não foi encontrado na raiz do JSON.", 
                         corpo_recebido = responseBody 
                     });
                 }
@@ -99,7 +93,7 @@ namespace EcoMonitor.Api.Controllers
 
                 var newUserRole = new UserRole
                 {
-                    Id = result.user.id, // Agora pegando corretamente de result.user.id
+                    Id = createdUser.id, // Agora pega o ID direto da raiz
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
@@ -117,8 +111,8 @@ namespace EcoMonitor.Api.Controllers
 
                 return Ok(new { 
                     mensagem = "Usuário e Role criados com sucesso!", 
-                    userId = result.user.id,
-                    email = result.user.email,
+                    userId = createdUser.id,
+                    email = createdUser.email,
                     role = newUserRole.Role 
                 });
             }
