@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization; // Necessário para o JsonPropertyName
 using System.Threading.Tasks;
 using EcoMonitor.Api.Models;
 using System.Collections.Generic;
@@ -35,11 +36,14 @@ namespace EcoMonitor.Api.Controllers
             public string Role { get; set; } = "client";
         }
 
-        // --- CLASSE AJUSTADA: MAPEIA O ID DIRETAMENTE DA RAIZ DO JSON ---
+        // --- MAPEAMENTO EXPLÍCITO: FORÇA O C# A LER O "id" DO JSON ---
         private class AdminUserResponse
         {
-            public string id { get; set; } = string.Empty;
-            public string email { get; set; } = string.Empty;
+            [JsonPropertyName("id")]
+            public string Id { get; set; } = string.Empty;
+
+            [JsonPropertyName("email")]
+            public string Email { get; set; } = string.Empty;
         }
 
         [HttpPost("User")]
@@ -73,15 +77,13 @@ namespace EcoMonitor.Api.Controllers
                     return BadRequest(new { mensagem = "Falha ao criar usuário no Auth.", detalhe = responseBody });
                 }
 
-                var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                
-                // Mapeia para a estrutura plana (id na raiz)
-                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody, jsonOptions);
+                // Desserialização com mapeamento explícito
+                var createdUser = JsonSerializer.Deserialize<AdminUserResponse>(responseBody);
 
-                if (createdUser == null || string.IsNullOrEmpty(createdUser.id))
+                if (createdUser == null || string.IsNullOrEmpty(createdUser.Id))
                 {
                     return BadRequest(new { 
-                        mensagem = "Usuário criado no Auth, mas o ID não foi encontrado na raiz do JSON.", 
+                        mensagem = "O ID mapeado ainda está nulo.", 
                         corpo_recebido = responseBody 
                     });
                 }
@@ -93,7 +95,7 @@ namespace EcoMonitor.Api.Controllers
 
                 var newUserRole = new UserRole
                 {
-                    Id = createdUser.id, // Agora pega o ID direto da raiz
+                    Id = createdUser.Id, // Usando a propriedade mapeada
                     Role = request.Role.ToLower() == "admin" ? "admin" : "client"
                 };
 
@@ -111,8 +113,8 @@ namespace EcoMonitor.Api.Controllers
 
                 return Ok(new { 
                     mensagem = "Usuário e Role criados com sucesso!", 
-                    userId = createdUser.id,
-                    email = createdUser.email,
+                    userId = createdUser.Id,
+                    email = createdUser.Email,
                     role = newUserRole.Role 
                 });
             }
