@@ -1,5 +1,4 @@
 <div class="admin-wrapper">
-  <!-- Cabeçalho do Painel -->
   <div class="admin-header">
     <div class="d-flex align-items-center gap-3">
       <div class="admin-icon-box">
@@ -12,7 +11,6 @@
     </div>
   </div>
 
-  <!-- Abas de Navegação -->
   <div class="admin-tabs">
     <button class="tab-btn" [class.active]="activeTab === 'usuarios'" (click)="setTab('usuarios')">
       <i class="bi bi-people-fill me-2"></i>Usuários
@@ -25,9 +23,7 @@
     </button>
   </div>
 
-  <!-- Conteúdo das Abas -->
   <div class="admin-content">
-    <!-- ABA: USUÁRIOS -->
     <div *ngIf="activeTab === 'usuarios'">
       <div class="content-card">
         <div class="content-card-header">
@@ -109,10 +105,65 @@
             {{ isLoading ? 'Criando...' : 'Criar Usuário' }}
           </button>
         </form>
+
+        <hr class="my-5 border-light" />
+
+        <div class="content-card-header mb-4">
+          <i class="bi bi-people-fill me-2 text-primary"></i>
+          <span>Usuários Cadastrados</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-muted small fw-bold">ID DO USUÁRIO</th>
+                <th class="text-muted small fw-bold text-center">NÍVEL</th>
+                <th class="text-muted small fw-bold text-end">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of userList">
+                <td class="text-truncate" style="max-width: 250px" [title]="user.Id">
+                  <code class="text-muted small">{{ user.Id }}</code>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="badge"
+                    [ngClass]="
+                      user.Role === 'admin'
+                        ? 'bg-warning-subtle text-warning-emphasis border border-warning'
+                        : 'bg-info-subtle text-info-emphasis border border-info'
+                    "
+                  >
+                    <i
+                      class="bi me-1"
+                      [ngClass]="user.Role === 'admin' ? 'bi-shield-fill-check' : 'bi-eye-fill'"
+                    ></i>
+                    {{ user.Role | uppercase }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deleteUser(user.Id)"
+                    [disabled]="isLoading"
+                  >
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="userList.length === 0">
+                <td colspan="3" class="text-center py-4 text-muted small">
+                  Nenhum usuário cadastrado na base de dados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- ABA: CONFIGURAÇÕES IOT -->
     <div *ngIf="activeTab === 'iot'">
       <div class="content-card">
         <div class="content-card-header">
@@ -173,7 +224,6 @@
       </div>
     </div>
 
-    <!-- ABA: PERMISSÕES -->
     <div *ngIf="activeTab === 'sobre'">
       <div class="content-card">
         <div class="content-card-header">
