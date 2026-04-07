@@ -22,7 +22,7 @@ export class AdminPanel {
   isLoading = false;
 
   // Ajustado para o prefixo do Controller
-  private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api/Admin/User';
+  private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api/Admin';
 
   constructor(
     private http: HttpClient,

@@ -111,7 +111,12 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro interno ao processar criação.", detalhe = ex.Message });
+                // return BadRequest(new { mensagem = "Erro interno ao processar criação.", detalhe = ex.Message });
+                return BadRequest(new { 
+                mensagem = "Erro interno ao processar criação.", 
+                detalhe = ex.Message,
+                stack = ex.StackTrace 
+                });
             }
         }
     }
