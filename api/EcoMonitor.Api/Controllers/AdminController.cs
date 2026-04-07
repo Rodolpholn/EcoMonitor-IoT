@@ -26,7 +26,11 @@ namespace EcoMonitor.Api.Controllers
         {
             _configuration = configuration;
             _supabaseUrl = "https://eznsxbjdssojayrqetry.supabase.co";
-            _serviceKey = _configuration["Supabase:ServiceRoleKey"] ?? "";
+            
+            // Tenta ler de diferentes formatos de chave comuns no Railway
+            _serviceKey = _configuration["Supabase:ServiceRoleKey"] 
+                          ?? _configuration["Supabase__ServiceRoleKey"] 
+                          ?? "";
         }
 
         public class CreateUserRequest
@@ -104,11 +108,11 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro crítico.", detalhe = ex.Message });
+                return BadRequest(new { mensagem = "Erro crítico na criação.", detalhe = ex.Message });
             }
         }
 
-        // --- 2. LISTAR USUÁRIOS ---
+        // --- 2. LISTAR USUÁRIOS (Corrigido para evitar Erro 500) ---
         [HttpGet("Users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -118,13 +122,17 @@ namespace EcoMonitor.Api.Controllers
                 var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
                 await adminClient.InitializeAsync();
 
-                // Busca todos os registros da tabela user_roles
-                var response = await adminClient.From<UserRole>().Get();
+                // O SEGREDO: .Select("id, role") evita que o C# busque colunas que não existem
+                var response = await adminClient.From<UserRole>()
+                                                .Select("id, role")
+                                                .Get();
+
                 return Ok(response.Models);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro ao listar usuários.", detalhe = ex.Message });
+                // Retorna o erro real para você ver no navegador
+                return StatusCode(500, new { mensagem = "Erro ao listar usuários no banco.", detalhe = ex.Message });
             }
         }
 
@@ -134,7 +142,6 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Deletar no Supabase Auth (via API Admin)
                 using var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Add("apikey", _serviceKey);
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _serviceKey);
@@ -147,14 +154,13 @@ namespace EcoMonitor.Api.Controllers
                     return BadRequest(new { mensagem = "Erro ao deletar no Auth.", detalhe = errorDetail });
                 }
 
-                // Deletar na tabela user_roles
                 var options = new Supabase.SupabaseOptions { AutoRefreshToken = false, AutoConnectRealtime = false };
                 var adminClient = new Supabase.Client(_supabaseUrl, _serviceKey, options);
                 await adminClient.InitializeAsync();
 
                 await adminClient.From<UserRole>().Where(x => x.Id == id).Delete();
 
-                return Ok(new { mensagem = "Usuário removido com sucesso de todas as bases!" });
+                return Ok(new { mensagem = "Usuário removido com sucesso!" });
             }
             catch (Exception ex)
             {
