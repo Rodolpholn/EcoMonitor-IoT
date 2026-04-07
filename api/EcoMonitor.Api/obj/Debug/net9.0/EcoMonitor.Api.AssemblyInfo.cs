@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10e2aa8e9ad7d58a6121ea39be5e2df6e20f2d34")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3dbf6f435e49cb10ed82a48fcabe3b741503700a")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoMonitor.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
