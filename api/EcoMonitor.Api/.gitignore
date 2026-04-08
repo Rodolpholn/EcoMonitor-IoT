@@ -2,3 +2,8 @@
 **/appsettings.json
 **/appsettings.Development.json
 .env
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
