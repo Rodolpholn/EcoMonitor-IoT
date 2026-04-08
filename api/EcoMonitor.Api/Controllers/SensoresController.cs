@@ -69,7 +69,7 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Se for uma requisição do ESP32 (ou se não houver Token Auth), valida pela API Key
+                // 1. Validação de Segurança
                 if (!User.Identity.IsAuthenticated)
                 {
                     if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
@@ -78,16 +78,25 @@ namespace EcoMonitor.Api.Controllers
                     }
                 }
 
-                var options = new QueryOptions 
-                { 
-                    Returning = QueryOptions.ReturnType.Minimal 
-                };
+                // 2. Validação de Existência (Regra de Negócio: Impede a ESP de criar sensores sozinha)
+                var check = await _supabaseClient
+                    .From<SensorModel>()
+                    .Where(x => x.Id == sensor.Id)
+                    .Get();
 
+                if (check.Models.Count == 0)
+                {
+                    // Retornamos NotFound para indicar que o equipamento precisa ser criado via Angular primeiro
+                    return NotFound(new { mensagem = $"Equipamento {sensor.Id} não cadastrado na planta via Dashboard." });
+                }
+
+                // 3. Atualização (Usamos Update em vez de Upsert para não resetar PosX e PosY)
                 await _supabaseClient
                     .From<SensorModel>()
-                    .Upsert(sensor, options);
+                    .Where(x => x.Id == sensor.Id)
+                    .Update(sensor);
 
-                return Ok(new { mensagem = "Dados processados com sucesso!", id = sensor.Id });
+                return Ok(new { mensagem = "Leitura processada com sucesso!", id = sensor.Id });
             }
             catch (Exception ex)
             {
@@ -103,7 +112,6 @@ namespace EcoMonitor.Api.Controllers
         {
             try
             {
-                // Busca o sensor antes de deletar para garantir que existe
                 var check = await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == id)
@@ -114,7 +122,6 @@ namespace EcoMonitor.Api.Controllers
                     return NotFound(new { mensagem = "Sensor não encontrado no banco de dados." });
                 }
 
-                // Executa a exclusão
                 await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == id)
