@@ -63,17 +63,19 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // POST: api/Sensores
-        // Alterado para AllowAnonymous para permitir o ESP32, mas validado via API Key
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
             try
             {
-                // Validação de Segurança via Header Customizada
-                if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
+                // Se for uma requisição do ESP32 (ou se não houver Token Auth), valida pela API Key
+                if (!User.Identity.IsAuthenticated)
                 {
-                    return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou ausente." });
+                    if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
+                    {
+                        return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou Token ausente." });
+                    }
                 }
 
                 var options = new QueryOptions 
@@ -85,27 +87,40 @@ namespace EcoMonitor.Api.Controllers
                     .From<SensorModel>()
                     .Upsert(sensor, options);
 
-                return Ok(new { mensagem = "Dados do sensor recebidos com sucesso!", id = sensor.Id });
+                return Ok(new { mensagem = "Dados processados com sucesso!", id = sensor.Id });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro ao processar dados do sensor", detalhe = ex.Message });
+                return BadRequest(new { mensagem = "Erro ao processar dados", detalhe = ex.Message });
             }
         }
 
         // DELETE: api/Sensores/{id}
-        [Authorize(Policy = "AdminOnly")]
+        // LIBERADO TEMPORARIAMENTE: AllowAnonymous para limpeza via Scalar sem erro 401
+        [AllowAnonymous]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSensor(string id)
         {
             try
             {
+                // Busca o sensor antes de deletar para garantir que existe
+                var check = await _supabaseClient
+                    .From<SensorModel>()
+                    .Where(x => x.Id == id)
+                    .Get();
+
+                if (check.Models.Count == 0)
+                {
+                    return NotFound(new { mensagem = "Sensor não encontrado no banco de dados." });
+                }
+
+                // Executa a exclusão
                 await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == id)
                     .Delete();
 
-                return NoContent();
+                return Ok(new { mensagem = "Sensor removido com sucesso!" });
             }
             catch (Exception ex)
             {

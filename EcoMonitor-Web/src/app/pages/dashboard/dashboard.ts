@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { SensorService } from '../../services/sensor';
 import { Chart, registerables } from 'chart.js';
 import { interval, Subscription } from 'rxjs';
@@ -16,7 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   chart: any;
   leituras: any[] = [];
-  isOnline = false; // Controle de status real
+  isOnline = false;
   private timerSubscription!: Subscription;
 
   resumo = {
@@ -28,10 +35,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     luminosidade: 0,
   };
 
-  constructor(private sensorService: SensorService) {}
+  constructor(
+    private sensorService: SensorService,
+    private cdr: ChangeDetectorRef, // Injetado para forçar atualização da tela
+  ) {}
 
   ngOnInit(): void {
     this.carregarDados();
+    // Refresh a cada 5 segundos
     this.timerSubscription = interval(5000).subscribe(() => this.carregarDados());
   }
 
@@ -43,57 +54,79 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sensorService.getLeituras().subscribe({
       next: (dados) => {
         if (dados && dados.length > 0) {
-          // Ordena e filtra apenas as últimas 24 leituras para não poluir o gráfico
-          this.leituras = dados
-            .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
-            .slice(-24);
+          // 1. Ordenação usando 'updated_at' (padrão do seu Supabase)
+          this.leituras = [...dados]
+            .sort(
+              (a: any, b: any) =>
+                new Date(a.updated_at || a.data_hora).getTime() -
+                new Date(b.updated_at || b.data_hora).getTime(),
+            )
+            .slice(-50);
 
           const ultimaLeitura = this.leituras[this.leituras.length - 1];
-          this.atualizarCardsResumo(ultimaLeitura);
-          this.verificarStatusConexao(ultimaLeitura.data_hora);
 
-          // Renderização segura do gráfico
-          requestAnimationFrame(() => this.renderizarGrafico());
+          // 2. Atualizar lógica de negócio
+          this.atualizarCardsResumo(ultimaLeitura);
+
+          // Usa 'updated_at' para o status de conexão
+          this.checkSystemStatus(ultimaLeitura.updated_at || ultimaLeitura.data_hora);
+
+          // 3. Renderizar gráfico e forçar detecção de mudanças no Angular
+          requestAnimationFrame(() => {
+            this.renderizarGrafico();
+            this.cdr.detectChanges(); // Acorda o Angular para atualizar os cards na tela
+          });
         }
       },
-      error: (err) => console.error('Erro na API:', err),
+      error: (err) => {
+        console.error('Erro ao buscar dados:', err);
+        this.isOnline = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
-  verificarStatusConexao(dataHoraUltima: string) {
-    const ultima = new Date(dataHoraUltima).getTime();
-    const agora = new Date().getTime();
-    const diferencaMinutos = (agora - ultima) / (1000 * 60);
-    this.isOnline = diferencaMinutos < 10; // Offline se não enviar dados há mais de 10 min
+  checkSystemStatus(lastReadingDate: string) {
+    if (!lastReadingDate) {
+      this.isOnline = false;
+      return;
+    }
+    const lastUpdate = new Date(lastReadingDate).getTime();
+    const now = new Date().getTime();
+
+    // Tolerância de 60 segundos para compensar oscilações de rede
+    const diffInSeconds = Math.abs(now - lastUpdate) / 1000;
+    this.isOnline = diffInSeconds < 60;
   }
 
   atualizarCardsResumo(data: any) {
     this.resumo = {
-      temperatura: data.temp_sht40 || 0,
-      umidade: data.umidade_sht40 || 0,
-      co2: data.co2 || 0,
-      tvoc: data.tvoc || 0,
-      v_bat: data.tensao_bateria || 0,
-      luminosidade: data.luminosidade || 0,
+      temperatura: Number(data.TempSht40?.toFixed(1)) || Number(data.temp_sht40?.toFixed(1)) || 0,
+      umidade: Number(data.UmidadeSht40?.toFixed(1)) || Number(data.umidade_sht40?.toFixed(1)) || 0,
+      co2: Math.round(data.Co2 || data.co2) || 0,
+      tvoc: Math.round(data.Tvoc || data.tvoc) || 0,
+      v_bat: Number(data.TensaoBateria?.toFixed(1)) || Number(data.tensao_bateria?.toFixed(1)) || 0,
+      luminosidade: Math.round(data.Luminosidade || data.luminosidade) || 0,
     };
   }
 
   renderizarGrafico() {
     if (!this.canvas || this.leituras.length === 0) return;
 
+    // LABELS: Agora usando 'updated_at' para o gráfico "andar" no eixo X
     const labels = this.leituras.map((item) => {
-      const d = new Date(item.data_hora);
+      const d = new Date(item.updated_at || item.data_hora);
       return isNaN(d.getTime())
         ? '---'
-        : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     });
 
-    const temps = this.leituras.map((item) => item.temp_sht40);
+    const temps = this.leituras.map((item) => item.TempSht40 || item.temp_sht40);
 
     if (this.chart) {
       this.chart.data.labels = labels;
       this.chart.data.datasets[0].data = temps;
-      this.chart.update('none'); // Update sem animação agressiva para fluidez
+      this.chart.update('none'); // Update sem animação para manter a fluidez dos 5s
       return;
     }
 
@@ -117,10 +150,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
+        },
         scales: {
-          y: { grid: { color: '#f0f0f0' }, ticks: { callback: (v) => v + '°' } },
-          x: { grid: { display: false } },
+          y: {
+            grid: { color: '#f0f0f0' },
+            ticks: { callback: (v) => v + '°' },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+          },
         },
       },
     });

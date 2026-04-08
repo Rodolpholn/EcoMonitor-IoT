@@ -1,150 +1,244 @@
-.login-wrapper {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+// 1. CONTAINER DO MAPA (PLANTA BAIXA)
+.map-container {
+  width: 100%;
+  height: calc(100vh - 100px);
+  position: relative;
+  border-radius: 15px;
+  overflow: auto;
+  cursor: crosshair;
+  user-select: none;
+  background-color: #f02f50;
 
-.side-blue {
-  flex: 1;
-  background: linear-gradient(135deg, #0d6efd 0%, #4facfe 60%, #00f2fe 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
-  padding: 2rem;
-
-  @media (max-width: 768px) {
+  &::-webkit-scrollbar {
     display: none;
   }
-}
+  scrollbar-width: none;
 
-.brand-box {
-  .logo-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    display: block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  }
-
-  h2 {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    letter-spacing: 1px;
-  }
-
-  p {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin-bottom: 2rem;
+  .sensor-overlay {
+    min-width: 3000px;
+    min-height: 2000px;
+    position: relative;
+    padding: 200px;
+    background-color: #ffffff;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
   }
 }
 
-.info-badge {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.85rem;
-  backdrop-filter: blur(4px);
-  display: inline-block;
+// 2. NOVO LAYOUT DASHBOARD (ESTILO SAAS / MODERN)
+.admin-wrapper {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
 }
 
-.side-form {
-  flex: 1;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr;
+  gap: 24px;
 
-.form-box {
-  width: 100%;
-  max-width: 400px;
-
-  h1 {
-    color: #1a1a2e;
-    font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 5px;
-  }
-
-  .subtitle {
-    color: #888;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
   }
 }
 
-.input-group-custom {
+// Estilo Glass-Card
+.glass-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 15px 35px rgba(51, 65, 85, 0.05);
+  transition: all 0.3s ease;
   position: relative;
-  margin-bottom: 1rem;
 
-  .input-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #aaa;
-    font-size: 1rem;
-    pointer-events: none;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(51, 65, 85, 0.1);
+  }
+
+  .card-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+
+    h6 {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .badge-pill {
+      border-radius: 50px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   }
 }
 
-.custom-input {
-  width: 100%;
-  padding: 13px 20px 13px 42px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 25px;
-  background: #f9f9f9;
-  outline: none;
-  font-size: 0.95rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+// Container de Círculos / Mini Indicadores
+.circular-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
 
-  &:focus {
-    border-color: #4facfe;
-    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
-    background: white;
+  .circle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .circle-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .circle-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
   }
 }
 
-.btn-login {
-  width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, #0d6efd, #4facfe);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  margin-top: 1.5rem;
-  box-shadow: 0 4px 20px rgba(13, 110, 253, 0.35);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
-  letter-spacing: 0.5px;
+// Estados de Alerta e Glow (Refinado)
+.border-danger-glow {
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15) !important;
+  animation: pulse-red-glow 2s infinite;
+}
 
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(13, 110, 253, 0.45);
-  }
+// ANIMAÇÃO DE PISCAR (Blink) para o Sistema Online
+.blink {
+  animation: blinker 1.5s linear infinite;
+}
 
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+@keyframes blinker {
+  50% {
+    opacity: 0.2;
   }
 }
 
-.footer-note {
-  color: #aaa;
-  font-size: 0.82rem;
-  text-align: center;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 1rem;
+// Pontos de Status Dinâmicos
+.dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  &.online {
+    background-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    animation: blink-soft 2s infinite;
+  }
+  &.offline {
+    background-color: #ef4444;
+  }
+}
+
+// 3. ANIMAÇÕES REFINADAS
+@keyframes pulse-red-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes blink-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Estilo de Tabela
+.table-borderless {
+  thead th {
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    border: none;
+  }
+  tbody td {
+    padding: 12px 8px;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+// Utilitários de Cores Subtle (Bootstrap custom)
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+.bg-danger-subtle {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.extra-small {
+  font-size: 0.65rem;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+
+// Barra de progresso
+.temp-progress-bar {
+  .progress {
+    background-color: #f1f5f9;
+  }
+}
+
+// Dashboard Header
+.dashboard-header {
+  h4 {
+    font-size: 1.1rem;
+    @media (max-width: 576px) {
+      font-size: 0.95rem;
+    }
+  }
+}
+
+// Responsividade Mobile
+@media (max-width: 576px) {
+  .glass-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+  .circular-container {
+    gap: 10px;
+  }
+}
+
+// Modais
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }

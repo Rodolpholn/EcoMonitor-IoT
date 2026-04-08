@@ -1,20 +1,25 @@
 <div
-  class="dashboard-header p-3 d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"
+  class="dashboard-header p-3 d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2"
 >
   <div>
     <h4 class="fw-bold mb-0 text-dark">MONITORAMENTO GERAL DA PLANTA</h4>
     <p class="text-muted small mb-0">Dados consolidados • Thermofrio IoT</p>
   </div>
-  <div
-    class="badge p-2 px-3 shadow-sm"
-    [ngClass]="
-      isOnline
-        ? 'bg-success-subtle text-success border border-success'
-        : 'bg-danger-subtle text-danger border border-danger'
-    "
-  >
-    <span class="dot me-1" [ngClass]="isOnline ? 'online' : 'offline'"></span>
-    {{ isOnline ? 'SISTEMA ONLINE' : 'SISTEMA OFFLINE' }}
+
+  <div class="d-flex justify-content-end">
+    <span
+      *ngIf="isOnline"
+      class="badge rounded-pill bg-success p-2 px-3 shadow-sm text-uppercase d-flex align-items-center"
+    >
+      <i class="bi bi-circle-fill me-2 blink"></i> SISTEMA ONLINE
+    </span>
+
+    <span
+      *ngIf="!isOnline"
+      class="badge rounded-pill bg-danger p-2 px-3 shadow-sm text-uppercase d-flex align-items-center"
+    >
+      <i class="bi bi-x-circle-fill me-2"></i> SISTEMA OFFLINE
+    </span>
   </div>
 </div>
 
@@ -50,7 +55,7 @@
       </div>
       <div class="circular-container mt-3">
         <div class="circle-item">
-          <div class="circle-value text-primary">{{ resumo.umidade }}%</div>
+          <div class="circle-value text-primary">{{ resumo.umidade | number: '1.1-1' }}%</div>
           <div class="circle-label text-muted">Umidade</div>
         </div>
         <div class="circle-item">
@@ -118,22 +123,26 @@
             </tr>
           </thead>
           <tbody class="small">
-            <tr *ngFor="let item of leituras.slice(-5)" class="border-top-light">
-              <td class="ps-0 fw-bold">{{ item.equipamento_id }}</td>
-              <td class="text-secondary">{{ item.data_hora | date: 'HH:mm:ss' }}</td>
+            <tr *ngFor="let item of leituras.slice(-5).reverse()" class="border-top-light">
+              <td class="ps-0 fw-bold">{{ item.id }}</td>
+              <td class="text-secondary">
+                {{ item.updated_at || item.data_hora | date: 'HH:mm:ss' }}
+              </td>
               <td>
                 <span
                   class="badge rounded-pill px-3"
                   [ngClass]="
-                    item.temp_sht40 > 30
+                    (item.temp_sht40 || item.TempSht40) > 30
                       ? 'bg-danger-subtle text-danger'
                       : 'bg-success-subtle text-success'
                   "
                 >
-                  {{ item.temp_sht40 > 30 ? 'Alerta' : 'Normal' }}
+                  {{ (item.temp_sht40 || item.TempSht40) > 30 ? 'Alerta' : 'Normal' }}
                 </span>
               </td>
-              <td class="text-end pe-0 fw-bold">{{ item.temp_sht40 }}°C</td>
+              <td class="text-end pe-0 fw-bold">
+                {{ item.temp_sht40 || item.TempSht40 | number: '1.1-1' }}°C
+              </td>
             </tr>
           </tbody>
         </table>

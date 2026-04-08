@@ -45,8 +45,6 @@
   </div>
 </div>
 
-<!-- Navegação Mobile (barra inferior) -->
-
 <nav class="navigation d-flex d-md-none" *ngIf="session$ | async as session">
   <ul>
     <li class="list" [class.active]="router.url === '/dashboard'">
@@ -74,6 +72,6 @@
       </a>
     </li>
 
-    <div class="indicator" [style.transform]="getIndicatorTransform(session.role)"></div>
+    <div class="indicator" [style.transform]="getIndicatorTransform(session.role ?? '')"></div>
   </ul>
 </nav>
