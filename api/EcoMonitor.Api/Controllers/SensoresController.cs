@@ -59,19 +59,21 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
-        // NOVO POST: api/Sensores/Cadastrar
-        // Este método deve ser chamado pelo Angular para criar o sensor no mapa
+        // POST: api/Sensores/Cadastrar
         [HttpPost("Cadastrar")]
         public async Task<ActionResult> CadastrarSensor([FromBody] SensorModel sensor)
         {
             try
             {
+                // Log de depuração para você ver no Railway se as coordenadas chegaram no C#
+                Console.WriteLine($"Cadastrando Sensor: {sensor.Id} | PosX: {sensor.PosX} | PosY: {sensor.PosY}");
+
                 var options = new QueryOptions { Returning = QueryOptions.ReturnType.Minimal };
                 
-                // O Upsert aqui é permitido porque é a ação intencional do usuário no Dashboard
+                // Realiza o Upsert (Cria se não existe, atualiza se já existe)
                 await _supabaseClient.From<SensorModel>().Upsert(sensor, options);
 
-                return Ok(new { mensagem = "Equipamento cadastrado com sucesso!", id = sensor.Id });
+                return Ok(new { mensagem = "Equipamento fixado na planta!", id = sensor.Id });
             }
             catch (Exception ex)
             {
@@ -79,8 +81,7 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
-        // POST: api/Sensores
-        // Este método é o que a ESP32 chama. Ele NÃO cria novos registros.
+        // POST: api/Sensores (Usado pela ESP32)
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
@@ -91,28 +92,30 @@ namespace EcoMonitor.Api.Controllers
                 {
                     if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
                     {
-                        return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou Token ausente." });
+                        return Unauthorized(new { mensagem = "Acesso negado." });
                     }
                 }
 
-                // Validação de Existência: Impede a ESP de criar sensores sozinha
-                var check = await _supabaseClient
-                    .From<SensorModel>()
-                    .Where(x => x.Id == sensor.Id)
-                    .Get();
+                // Verifica se o sensor existe
+                var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == sensor.Id).Get();
 
                 if (check.Models.Count == 0)
                 {
-                    return NotFound(new { mensagem = "Equipamento não pré-cadastrado no sistema." });
+                    return NotFound(new { mensagem = "Equipamento não pré-cadastrado." });
                 }
 
-                // Usamos Update para não sobrescrever PosX e PosY que o usuário definiu no Angular
+                // IMPORTANTE: Para não perder a posição quando a ESP32 envia dados, 
+                // garantimos que o Update não envie valores nulos de posição se a ESP não os tiver.
+                var sensorExistente = check.Models[0];
+                if (sensor.PosX == null || sensor.PosX == 0) sensor.PosX = sensorExistente.PosX;
+                if (sensor.PosY == null || sensor.PosY == 0) sensor.PosY = sensorExistente.PosY;
+
                 await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == sensor.Id)
                     .Update(sensor);
 
-                return Ok(new { mensagem = "Leitura processada com sucesso!", id = sensor.Id });
+                return Ok(new { mensagem = "Leitura processada!", id = sensor.Id });
             }
             catch (Exception ex)
             {
@@ -136,11 +139,11 @@ namespace EcoMonitor.Api.Controllers
 
                 await _supabaseClient.From<SensorModel>().Where(x => x.Id == id).Delete();
 
-                return Ok(new { mensagem = "Sensor removido com sucesso!" });
+                return Ok(new { mensagem = "Sensor removido!" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = "Erro ao excluir sensor", detalhe = ex.Message });
+                return BadRequest(new { mensagem = "Erro ao excluir", detalhe = ex.Message });
             }
         }
     }
