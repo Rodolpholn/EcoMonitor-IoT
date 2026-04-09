@@ -19,6 +19,7 @@ export class SensoresIot implements OnInit {
   showSensorMenu = false;
   showModal = false;
 
+  // Coordenadas para posicionamento
   menuX = 0;
   menuY = 0;
   sensorX = 0;
@@ -72,18 +73,19 @@ export class SensoresIot implements OnInit {
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Normalização: aceita tanto pos_x quanto posX vindo da API
+            // Normalização rigorosa: prioriza posX/posY do DTO
             x: s.posX ?? s.pos_x ?? 0,
             y: s.posY ?? s.pos_y ?? 0,
             id: s.id || s.Id,
           }));
+          console.log('Sensores carregados na planta:', this.sensoresNaPlanta);
         }
       },
       error: (err) => console.error('Erro buscar sensores:', err),
     });
   }
 
-  // --- MÉTODOS DE INTERAÇÃO ---
+  // --- MÉTODOS DE INTERAÇÃO (DRAG & ZOOM) ---
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
     if (e.ctrlKey) {
@@ -123,17 +125,29 @@ export class SensoresIot implements OnInit {
     if (this.mapContainer) this.mapContainer.nativeElement.style.cursor = 'crosshair';
   }
 
+  // --- CAPTURA DE POSIÇÃO NO CLIQUE ---
   onRightClick(event: MouseEvent) {
     event.preventDefault();
     if (!this.isAdmin) return;
+
     const el = this.mapContainer.nativeElement;
     const rect = el.getBoundingClientRect();
 
-    // Calcula as coordenadas reais dentro da planta considerando o scroll e o zoom
-    this.menuX = event.clientX - rect.left;
-    this.menuY = event.clientY - rect.top;
-    this.sensorX = (el.scrollLeft + (event.clientX - rect.left)) / this.zoomLevel;
-    this.sensorY = (el.scrollTop + (event.clientY - rect.top)) / this.zoomLevel;
+    // 1. Posição relativa ao visor (viewport)
+    const relX = event.clientX - rect.left;
+    const relY = event.clientY - rect.top;
+
+    // 2. Considera o scroll interno e o zoom para achar a coordenada real na imagem
+    this.sensorX = (el.scrollLeft + relX) / this.zoomLevel;
+    this.sensorY = (el.scrollTop + relY) / this.zoomLevel;
+
+    // Menu visual (não precisa de zoom/scroll pois é absoluto na tela)
+    this.menuX = relX;
+    this.menuY = relY;
+
+    console.log(
+      `Clique detectado: Visual(X:${this.menuX}, Y:${this.menuY}) | Real na Planta(X:${this.sensorX}, Y:${this.sensorY})`,
+    );
 
     this.showSensorMenu = false;
     this.showMenu = true;
@@ -169,26 +183,28 @@ export class SensoresIot implements OnInit {
 
   salvarEquipamento() {
     if (this.novoSensor.id && this.novoSensor.nome) {
-      // CORREÇÃO: Enviamos 'posX' e 'posY' (PascalCase/CamelCase) para bater com o C#
+      // Enviamos posX/posY (PascalCase) para o DTO e pos_x/pos_y (snake_case) por garantia
       const payload = {
         id: this.novoSensor.id.trim(),
         nome: this.novoSensor.nome,
-        pos_x: Number(this.sensorX.toFixed(2)),
-        pos_y: Number(this.sensorY.toFixed(2)),
         posX: Number(this.sensorX.toFixed(2)),
         posY: Number(this.sensorY.toFixed(2)),
+        pos_x: Number(this.sensorX.toFixed(2)),
+        pos_y: Number(this.sensorY.toFixed(2)),
       };
-      console.log('Payload sendo enviado:', payload);
+
+      console.log('Enviando payload para a API:', payload);
 
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
-          this.carregarSensores();
           this.showModal = false;
-          this.novoSensor = { id: '', nome: '' }; // Limpa o form
+          this.novoSensor = { id: '', nome: '' };
+          // Pequeno delay para o Supabase processar antes do refresh
+          setTimeout(() => this.carregarSensores(), 500);
         },
         error: (err) => {
-          console.error('Erro ao salvar:', err);
-          alert('Erro ao salvar: Verifique se o ID está correto ou se a API está online.');
+          console.error('Erro na API ao salvar:', err);
+          alert('Erro ao salvar. Verifique se o ID já existe no sistema.');
         },
       });
     }

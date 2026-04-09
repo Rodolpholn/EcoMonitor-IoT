@@ -43,15 +43,15 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
 });
 
-// 5. CORS - CORREÇÃO CRÍTICA AQUI
+// 5. CORS - AJUSTE PARA ELIMINAR O ERRO DO CONSOLE
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.SetIsOriginAllowed(_ => true) // Isso substitui o AllowAnyOrigin de forma segura para o .NET
+        policy.WithOrigins("http://localhost:4200") // Permite explicitamente o seu Angular local
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); // Agora o AllowCredentials vai funcionar sem crashar
+              .AllowCredentials(); // Necessário para enviar tokens/sessão
     });
 });
 
@@ -59,6 +59,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        // Importante: PropertyNamingPolicy = null mantém os nomes das propriedades como estão no C#
         options.JsonSerializerOptions.PropertyNamingPolicy = null; 
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
@@ -69,10 +70,10 @@ var app = builder.Build();
 
 // --- ORDEM DOS MIDDLEWARES (CRÍTICO) ---
 
-// CORS deve ser SEMPRE antes de Authentication/Authorization
+// 1. CORS deve ser a PRIMEIRA coisa para evitar erro no pre-flight do navegador
 app.UseCors("AllowAll");
 
-// Middleware para Railway/HTTPS
+// 2. Middleware para Railway/HTTPS (ajusta o esquema para não dar erro de segurança)
 app.Use((context, next) =>
 {
     if (context.Request.Headers.ContainsKey("X-Forwarded-Proto"))
@@ -88,9 +89,7 @@ app.MapScalarApiReference(options =>
     options.WithTitle("EcoMonitor API").WithTheme(ScalarTheme.Moon);
 });
 
-// No Railway, o redirecionamento HTTPS pode causar loop se não houver certificado no app
-// app.UseHttpsRedirection(); 
-
+// Autenticação e Autorização SEMPRE depois do CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
