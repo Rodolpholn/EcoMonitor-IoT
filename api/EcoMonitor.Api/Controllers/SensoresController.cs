@@ -16,8 +16,6 @@ namespace EcoMonitor.Api.Controllers
     public class SensoresController : ControllerBase
     {
         private readonly Supabase.Client _supabaseClient;
-        
-        // Chave de segurança para os dispositivos IoT (Mesma que colocar no ESP32)
         private const string IOT_API_KEY = "Thermofrio_Seguranca_Maxima_2026_@#";
 
         public SensoresController(Supabase.Client supabaseClient)
@@ -32,7 +30,6 @@ namespace EcoMonitor.Api.Controllers
             try 
             {
                 var result = await _supabaseClient.From<SensorModel>().Get();
-                
                 var listaLimpa = result.Models.Select(s => new SensorDTO
                 {
                     Id = s.Id,
@@ -62,14 +59,34 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
+        // NOVO POST: api/Sensores/Cadastrar
+        // Este método deve ser chamado pelo Angular para criar o sensor no mapa
+        [HttpPost("Cadastrar")]
+        public async Task<ActionResult> CadastrarSensor([FromBody] SensorModel sensor)
+        {
+            try
+            {
+                var options = new QueryOptions { Returning = QueryOptions.ReturnType.Minimal };
+                
+                // O Upsert aqui é permitido porque é a ação intencional do usuário no Dashboard
+                await _supabaseClient.From<SensorModel>().Upsert(sensor, options);
+
+                return Ok(new { mensagem = "Equipamento cadastrado com sucesso!", id = sensor.Id });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = "Erro ao cadastrar equipamento", detalhe = ex.Message });
+            }
+        }
+
         // POST: api/Sensores
+        // Este método é o que a ESP32 chama. Ele NÃO cria novos registros.
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
             try
             {
-                // 1. Validação de Segurança
                 if (!User.Identity.IsAuthenticated)
                 {
                     if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
@@ -78,7 +95,7 @@ namespace EcoMonitor.Api.Controllers
                     }
                 }
 
-                // 2. Validação de Existência (Regra de Negócio: Impede a ESP de criar sensores sozinha)
+                // Validação de Existência: Impede a ESP de criar sensores sozinha
                 var check = await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == sensor.Id)
@@ -86,11 +103,10 @@ namespace EcoMonitor.Api.Controllers
 
                 if (check.Models.Count == 0)
                 {
-                    // Retornamos NotFound para indicar que o equipamento precisa ser criado via Angular primeiro
-                    return NotFound(new { mensagem = $"Equipamento {sensor.Id} não cadastrado na planta via Dashboard." });
+                    return NotFound(new { mensagem = "Equipamento não pré-cadastrado no sistema." });
                 }
 
-                // 3. Atualização (Usamos Update em vez de Upsert para não resetar PosX e PosY)
+                // Usamos Update para não sobrescrever PosX e PosY que o usuário definiu no Angular
                 await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == sensor.Id)
@@ -105,27 +121,20 @@ namespace EcoMonitor.Api.Controllers
         }
 
         // DELETE: api/Sensores/{id}
-        // LIBERADO TEMPORARIAMENTE: AllowAnonymous para limpeza via Scalar sem erro 401
         [AllowAnonymous]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSensor(string id)
         {
             try
             {
-                var check = await _supabaseClient
-                    .From<SensorModel>()
-                    .Where(x => x.Id == id)
-                    .Get();
+                var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == id).Get();
 
                 if (check.Models.Count == 0)
                 {
-                    return NotFound(new { mensagem = "Sensor não encontrado no banco de dados." });
+                    return NotFound(new { mensagem = "Sensor não encontrado." });
                 }
 
-                await _supabaseClient
-                    .From<SensorModel>()
-                    .Where(x => x.Id == id)
-                    .Delete();
+                await _supabaseClient.From<SensorModel>().Where(x => x.Id == id).Delete();
 
                 return Ok(new { mensagem = "Sensor removido com sucesso!" });
             }

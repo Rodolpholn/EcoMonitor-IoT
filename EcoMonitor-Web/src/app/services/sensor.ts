@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class SensorService {
-  // Ajustado para a sua porta 5020 e o endpoint que criamos no Controller
+  // Mantendo a sua URL do Railway
   private apiUrl = 'https://ecomonitor-iot-production.up.railway.app/api/sensores';
 
   constructor(private http: HttpClient) {}
@@ -16,9 +16,10 @@ export class SensorService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  // 2. Salva ou Atualiza um sensor (clique no botão Salvar do Modal)
+  // 2. Método para o DASHBOARD cadastrar um novo sensor na planta
+  // Alterado para bater no endpoint /Cadastrar do seu Controller C#
   salvarSensor(sensor: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, sensor);
+    return this.http.post<any>(`${this.apiUrl}/Cadastrar`, sensor);
   }
 
   // 3. Exclui um sensor da planta baixa
@@ -26,7 +27,7 @@ export class SensorService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  // 4. Busca o histórico de leituras (o que você já tinha)
+  // 4. Busca o histórico de leituras (Dashboard)
   getLeituras(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
