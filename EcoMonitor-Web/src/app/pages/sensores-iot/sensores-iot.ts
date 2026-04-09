@@ -52,8 +52,6 @@ export class SensoresIot implements OnInit {
     this.carregarSensores();
     this.carregarConfiguracaoPlanta();
 
-    // Reduzi para 10 segundos o intervalo de sensores na planta
-    // para evitar conflito com a animação de exclusão
     setInterval(() => this.carregarSensores(), 10000);
   }
 
@@ -74,10 +72,10 @@ export class SensoresIot implements OnInit {
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Normalização de coordenadas para evitar que o sensor "pule"
-            x: s.pos_x ?? s.posX ?? 0,
-            y: s.pos_y ?? s.posY ?? 0,
-            id: s.id || s.Id, // Garante que o ID exista para a exclusão
+            // Normalização: aceita tanto pos_x quanto posX vindo da API
+            x: s.posX ?? s.pos_x ?? 0,
+            y: s.posY ?? s.pos_y ?? 0,
+            id: s.id || s.Id,
           }));
         }
       },
@@ -85,7 +83,7 @@ export class SensoresIot implements OnInit {
     });
   }
 
-  // --- MÉTODOS DE INTERAÇÃO (ZOOM E DRAG) ---
+  // --- MÉTODOS DE INTERAÇÃO ---
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
     if (e.ctrlKey) {
@@ -127,13 +125,16 @@ export class SensoresIot implements OnInit {
 
   onRightClick(event: MouseEvent) {
     event.preventDefault();
-    if (!this.isAdmin) return; // Só abre menu se for admin
+    if (!this.isAdmin) return;
     const el = this.mapContainer.nativeElement;
     const rect = el.getBoundingClientRect();
+
+    // Calcula as coordenadas reais dentro da planta considerando o scroll e o zoom
     this.menuX = event.clientX - rect.left;
     this.menuY = event.clientY - rect.top;
     this.sensorX = (el.scrollLeft + (event.clientX - rect.left)) / this.zoomLevel;
     this.sensorY = (el.scrollTop + (event.clientY - rect.top)) / this.zoomLevel;
+
     this.showSensorMenu = false;
     this.showMenu = true;
   }
@@ -168,53 +169,52 @@ export class SensoresIot implements OnInit {
 
   salvarEquipamento() {
     if (this.novoSensor.id && this.novoSensor.nome) {
+      // CORREÇÃO: Enviamos 'posX' e 'posY' (PascalCase/CamelCase) para bater com o C#
       const payload = {
-        id: this.novoSensor.id.trim(), // Remove espaços
+        id: this.novoSensor.id.trim(),
         nome: this.novoSensor.nome,
         pos_x: Number(this.sensorX.toFixed(2)),
         pos_y: Number(this.sensorY.toFixed(2)),
+        posX: Number(this.sensorX.toFixed(2)),
+        posY: Number(this.sensorY.toFixed(2)),
       };
+      console.log('Payload sendo enviado:', payload);
+
       this.sensorService.salvarSensor(payload).subscribe({
         next: () => {
           this.carregarSensores();
           this.showModal = false;
+          this.novoSensor = { id: '', nome: '' }; // Limpa o form
         },
-        error: (err) => alert('Erro ao salvar: Verifique se o ID já existe.'),
+        error: (err) => {
+          console.error('Erro ao salvar:', err);
+          alert('Erro ao salvar: Verifique se o ID está correto ou se a API está online.');
+        },
       });
     }
   }
 
   excluirSensor() {
     if (!this.sensorParaEditar) return;
-
     if (confirm(`Remover permanentemente ${this.sensorParaEditar.nome}?`)) {
       const idParaRemover = this.sensorParaEditar.id;
-
-      // BLINDAGEM: Remove do array local IMEDIATAMENTE para o ícone sumir da tela
       this.sensoresNaPlanta = this.sensoresNaPlanta.filter((s) => s.id !== idParaRemover);
       this.showSensorMenu = false;
 
       this.sensorService.excluirSensor(idParaRemover).subscribe({
         next: () => {
-          console.log('Sensor deletado do banco com sucesso.');
-          // Recarrega para garantir sincronia
+          console.log('Sensor deletado com sucesso.');
           setTimeout(() => this.carregarSensores(), 1000);
         },
         error: (err) => {
-          console.error('Erro ao excluir no banco:', err);
-          alert('Não foi possível excluir do banco de dados. O sensor voltará no próximo refresh.');
-          this.carregarSensores(); // Se deu erro no banco, ele volta para a lista
+          console.error('Erro ao excluir:', err);
+          alert('Não foi possível excluir do banco.');
+          this.carregarSensores();
         },
       });
     }
   }
 
-  configurarMapa() {
-    /* Mantido conforme original */
-  }
-  removerPlanta() {
-    /* Mantido conforme original */
-  }
   editarSensor() {
     alert('Edição em breve.');
   }
