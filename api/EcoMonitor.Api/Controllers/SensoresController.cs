@@ -137,6 +137,9 @@ namespace EcoMonitor.Api.Controllers
                 sensor.PosX = sensorExistente.PosX;
                 sensor.PosY = sensorExistente.PosY;
 
+                // Garante que o horário da leitura será atualizado no banco (Supabase) a cada POST da ESP32
+                sensor.UpdatedAt = DateTime.UtcNow;
+
                 await _supabaseClient
                     .From<SensorModel>()
                     .Where(x => x.Id == sensor.Id)

@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   chart: any;
   leituras: any[] = [];
+  historicoGrafico: any[] = [];
   isOnline = false;
   private timerSubscription!: Subscription;
 
@@ -37,12 +38,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private sensorService: SensorService,
-    private cdr: ChangeDetectorRef, // Injetado para forçar atualização da tela
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.carregarDados();
-    // Refresh a cada 5 segundos
     this.timerSubscription = interval(5000).subscribe(() => this.carregarDados());
   }
 
@@ -54,34 +54,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sensorService.getLeituras().subscribe({
       next: (dados) => {
         if (dados && dados.length > 0) {
-          // Normalização da data: Troca espaço por 'T' para garantir formato ISO 8601 exigido pelo JS e Angular
+          // 1. Normalização Robusta: Converte para objeto Date imediatamente
           const dadosNormalizados = dados.map((item: any) => {
-            let rawDate = item.updated_at || item.updatedAt || item.UpdatedAt;
+            let rawDate = item.updated_at || item.updatedAt || item.UpdatedAt || item.created_at;
+            let dateObj: Date;
+
             if (typeof rawDate === 'string') {
-              rawDate = rawDate.replace(' ', 'T');
+              // Substitui espaço por T para garantir compatibilidade ISO (Postgres -> JS)
+              dateObj = new Date(rawDate.replace(' ', 'T'));
+            } else {
+              dateObj = new Date(rawDate);
             }
-            return { ...item, safeDate: rawDate };
+
+            return { ...item, safeDate: dateObj };
           });
 
-          // 1. Ordenação usando 'safeDate'
+          // 2. Ordenação e Seleção de Leituras
           this.leituras = [...dadosNormalizados]
-            .sort(
-              (a: any, b: any) => new Date(a.safeDate).getTime() - new Date(b.safeDate).getTime(),
-            )
+            .sort((a, b) => a.safeDate.getTime() - b.safeDate.getTime())
             .slice(-50);
 
           const ultimaLeitura = this.leituras[this.leituras.length - 1];
 
-          // 2. Atualizar lógica de negócio
-          this.atualizarCardsResumo(ultimaLeitura);
+          // 3. Atualizar Histórico do Gráfico (Evitando duplicatas por Timestamp)
+          dadosNormalizados.forEach((d: any) => {
+            const jaExiste = this.historicoGrafico.some(
+              (h) => h.safeDate.getTime() === d.safeDate.getTime(),
+            );
+            if (!jaExiste) {
+              this.historicoGrafico.push(d);
+            }
+          });
 
-          // Usa 'safeDate' para o status de conexão
+          this.historicoGrafico.sort((a, b) => a.safeDate.getTime() - b.safeDate.getTime());
+          if (this.historicoGrafico.length > 50) {
+            this.historicoGrafico = this.historicoGrafico.slice(-50);
+          }
+
+          // 4. Lógica de Interface
+          this.atualizarCardsResumo(ultimaLeitura);
           this.checkSystemStatus(ultimaLeitura.safeDate);
 
-          // 3. Renderizar gráfico e forçar detecção de mudanças no Angular
           requestAnimationFrame(() => {
             this.renderizarGrafico();
-            this.cdr.detectChanges(); // Acorda o Angular para atualizar os cards na tela
+            this.cdr.detectChanges();
           });
         }
       },
@@ -93,15 +109,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  checkSystemStatus(lastReadingDate: string) {
-    if (!lastReadingDate) {
+  checkSystemStatus(lastReadingDate: Date) {
+    if (!lastReadingDate || isNaN(lastReadingDate.getTime())) {
       this.isOnline = false;
       return;
     }
-    const lastUpdate = new Date(lastReadingDate).getTime();
+    const lastUpdate = lastReadingDate.getTime();
     const now = new Date().getTime();
 
-    // Tolerância de 60 segundos para compensar oscilações de rede
+    // Tolerância de 60 segundos
     const diffInSeconds = Math.abs(now - lastUpdate) / 1000;
     this.isOnline = diffInSeconds < 60;
   }
@@ -118,22 +134,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   renderizarGrafico() {
-    if (!this.canvas || this.leituras.length === 0) return;
+    if (!this.canvas || this.historicoGrafico.length === 0) return;
 
-    // LABELS: Agora usando 'safeDate' para o gráfico "andar" no eixo X
-    const labels = this.leituras.map((item) => {
-      const d = new Date(item.safeDate);
-      return isNaN(d.getTime())
-        ? '---'
-        : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    // Criamos as labels formatadas como string para o Eixo X
+    const labels = this.historicoGrafico.map((item) => {
+      const d = item.safeDate;
+      return d instanceof Date && !isNaN(d.getTime())
+        ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        : '---';
     });
 
-    const temps = this.leituras.map((item) => item.TempSht40 || item.temp_sht40);
+    const temps = this.historicoGrafico.map((item) => item.TempSht40 || item.temp_sht40 || 0);
 
     if (this.chart) {
       this.chart.data.labels = labels;
       this.chart.data.datasets[0].data = temps;
-      this.chart.update('none'); // Update sem animação para manter a fluidez dos 5s
+      this.chart.update('none');
       return;
     }
 
@@ -150,6 +166,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             fill: true,
             tension: 0.4,
             pointRadius: 4,
+            pointHoverRadius: 7,
             pointBackgroundColor: '#0d6efd',
           },
         ],
@@ -162,6 +179,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
           tooltip: {
             mode: 'index',
             intersect: false,
+            callbacks: {
+              title: (tooltipItems: any) => {
+                // Aqui pegamos a label que já formatamos lá em cima
+                return 'Hora da Captura: ' + tooltipItems[0].label;
+              },
+              label: (context: any) => {
+                return 'Temperatura: ' + context.parsed.y.toFixed(2) + ' °C';
+              },
+            },
           },
         },
         scales: {
@@ -171,7 +197,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           },
           x: {
             grid: { display: false },
-            ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+            ticks: {
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 10,
+              font: { size: 10 },
+            },
           },
         },
       },
