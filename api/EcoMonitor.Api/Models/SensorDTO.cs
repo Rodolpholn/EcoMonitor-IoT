@@ -8,16 +8,15 @@ namespace EcoMonitor.Api.Models
 {
     public class SensorDTO
     {
-        [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
     [JsonPropertyName("nome")] public string? Nome { get; set; }
-    
-    // Adicionando suporte para os dois jeitos que o Angular pode enviar
-    [JsonPropertyName("pos_x")] public double? PosX { get; set; }
-    [JsonPropertyName("pos_y")] public double? PosY { get; set; }
 
-    // Mantendo compatibilidade com snake_case se necessário
-        [JsonPropertyName("pos_x")] public double? PosX_Snake { set { if (value.HasValue) PosX = value; } }
-        [JsonPropertyName("pos_y")] public double? PosY_Snake { set { if (value.HasValue) PosY = value; } }
+    // Campos de localização
+    [JsonPropertyName("pos_x")] 
+    public double? PosX { get; set; }
+
+    [JsonPropertyName("pos_y")] 
+    public double? PosY { get; set; }
     
     // Novos campos reais da ESP32
     [JsonPropertyName("co2")] public double? Co2 { get; set; }
