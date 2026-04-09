@@ -25,6 +25,7 @@ namespace EcoMonitor.Api.Controllers
 
         // GET: api/Sensores
         [HttpGet]
+        [EndpointSummary("Lista todos os sensores com telemetria e posição")]
         public async Task<ActionResult<IEnumerable<SensorDTO>>> GetSensores()
         {
             try 
@@ -59,14 +60,14 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
-        // POST: api/Sensores/Cadastrar
+        // POST: api/Sensores/Cadastrar (Ação do Dashboard Angular)
         [HttpPost("Cadastrar")]
+        [EndpointSummary("Fixa a posição de um sensor na planta (Dashboard)")]
         public async Task<ActionResult> CadastrarSensor([FromBody] SensorModel sensor)
         {
             try
             {
-                // Log de depuração para você ver no Railway se as coordenadas chegaram no C#
-                Console.WriteLine($"Cadastrando Sensor: {sensor.Id} | PosX: {sensor.PosX} | PosY: {sensor.PosY}");
+                Console.WriteLine($"[ANGULAR] Cadastrando ID: {sensor.Id} em X:{sensor.PosX} Y:{sensor.PosY}");
 
                 var options = new QueryOptions { Returning = QueryOptions.ReturnType.Minimal };
                 
@@ -81,22 +82,23 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
-        // POST: api/Sensores (Usado pela ESP32)
+        // POST: api/Sensores (Ação da ESP32)
         [AllowAnonymous]
         [HttpPost]
+        [EndpointSummary("Recebe telemetria da ESP32 (Não altera posição)")]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
             try
             {
-                if (!User.Identity.IsAuthenticated)
+                // Correção do erro de referência nula
+                if (User.Identity?.IsAuthenticated != true)
                 {
                     if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
                     {
-                        return Unauthorized(new { mensagem = "Acesso negado." });
+                        return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou Token ausente." });
                     }
                 }
 
-                // Verifica se o sensor existe
                 var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == sensor.Id).Get();
 
                 if (check.Models.Count == 0)
@@ -104,11 +106,10 @@ namespace EcoMonitor.Api.Controllers
                     return NotFound(new { mensagem = "Equipamento não pré-cadastrado." });
                 }
 
-                // IMPORTANTE: Para não perder a posição quando a ESP32 envia dados, 
-                // garantimos que o Update não envie valores nulos de posição se a ESP não os tiver.
+                // Preserva as coordenadas atuais do banco para a ESP32 não zerar o ícone
                 var sensorExistente = check.Models[0];
-                if (sensor.PosX == null || sensor.PosX == 0) sensor.PosX = sensorExistente.PosX;
-                if (sensor.PosY == null || sensor.PosY == 0) sensor.PosY = sensorExistente.PosY;
+                sensor.PosX = sensorExistente.PosX;
+                sensor.PosY = sensorExistente.PosY;
 
                 await _supabaseClient
                     .From<SensorModel>()
@@ -126,19 +127,15 @@ namespace EcoMonitor.Api.Controllers
         // DELETE: api/Sensores/{id}
         [AllowAnonymous]
         [HttpDelete("{id}")]
+        [EndpointSummary("Remove um sensor do sistema")]
         public async Task<IActionResult> DeleteSensor(string id)
         {
             try
             {
                 var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == id).Get();
-
-                if (check.Models.Count == 0)
-                {
-                    return NotFound(new { mensagem = "Sensor não encontrado." });
-                }
+                if (check.Models.Count == 0) return NotFound(new { mensagem = "Sensor não encontrado." });
 
                 await _supabaseClient.From<SensorModel>().Where(x => x.Id == id).Delete();
-
                 return Ok(new { mensagem = "Sensor removido!" });
             }
             catch (Exception ex)

@@ -180,7 +180,6 @@ export class SensoresIot implements OnInit {
 
   salvarEquipamento() {
     if (this.novoSensor.id && this.novoSensor.nome) {
-      // Payload limpo para evitar conflitos de propriedade no .NET
       const payload = {
         id: this.novoSensor.id.trim(),
         nome: this.novoSensor.nome,
@@ -194,7 +193,6 @@ export class SensoresIot implements OnInit {
         next: () => {
           this.showModal = false;
           this.novoSensor = { id: '', nome: '' };
-          // Atualiza a lista após um pequeno delay para garantir que o Supabase salvou
           setTimeout(() => this.carregarSensores(), 800);
         },
         error: (err) => {
@@ -209,8 +207,6 @@ export class SensoresIot implements OnInit {
     if (!this.sensorParaEditar) return;
     if (confirm(`Remover permanentemente ${this.sensorParaEditar.nome}?`)) {
       const idParaRemover = this.sensorParaEditar.id;
-
-      // Otimismo: remove da tela antes de confirmar o banco
       this.sensoresNaPlanta = this.sensoresNaPlanta.filter((s) => s.id !== idParaRemover);
       this.showSensorMenu = false;
 
@@ -230,5 +226,37 @@ export class SensoresIot implements OnInit {
 
   editarSensor() {
     alert('Edição disponível em breve.');
+  }
+
+  // --- MÉTODOS ADICIONADOS PARA RESOLVER ERROS DE COMPILAÇÃO ---
+  configurarMapa() {
+    const url = prompt('Insira a URL da imagem da planta:');
+    if (url) {
+      this.http.post(`${this.apiUrl}/Planta`, { imagemUrl: url }).subscribe({
+        next: () => {
+          this.imagemPlantaUrl = url;
+          alert('Planta atualizada com sucesso!');
+        },
+        error: (err) => {
+          console.error('Erro ao salvar planta:', err);
+          alert('Erro ao salvar imagem da planta.');
+        },
+      });
+    }
+  }
+
+  removerPlanta() {
+    if (confirm('Deseja realmente remover a imagem da planta?')) {
+      this.http.delete(`${this.apiUrl}/Planta`).subscribe({
+        next: () => {
+          this.imagemPlantaUrl = '';
+          alert('Imagem da planta removida.');
+        },
+        error: (err) => {
+          console.error('Erro ao remover planta:', err);
+          alert('Erro ao remover imagem da planta.');
+        },
+      });
+    }
   }
 }

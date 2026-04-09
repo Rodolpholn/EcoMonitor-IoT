@@ -88,10 +88,10 @@
             </div>
             <div class="d-flex justify-content-between align-items-center mb-1">
               <span><i class="bi bi-brightness-high text-warning me-1"></i>Luz:</span>
-              <span class="fw-bold"
-                >{{ s.luminosidade ?? 0 }}
-                <small class="text-muted" style="font-size: 0.5rem">(0=claro)</small></span
-              >
+              <span class="fw-bold">
+                {{ s.luminosidade ?? 0 }}
+                <small class="text-muted" style="font-size: 0.5rem">(0=claro)</small>
+              </span>
             </div>
 
             <div
@@ -147,12 +147,15 @@
       <ul>
         <li (click)="addEquipamento()"><i class="bi bi-plus-circle"></i> Adicionar Equipamento</li>
 
-        <li *ngIf="!imagemPlantaUrl" (click)="configurarMapa()">
-          <i class="bi bi-upload"></i> Upload da Planta
-        </li>
-        <li *ngIf="imagemPlantaUrl" (click)="removerPlanta()" class="text-danger fw-bold">
-          <i class="bi bi-trash-fill"></i> Remover Planta
-        </li>
+        @if (!imagemPlantaUrl) {
+          <li (click)="configurarMapa()"><i class="bi bi-upload"></i> Upload da Planta</li>
+        }
+
+        @if (imagemPlantaUrl) {
+          <li (click)="removerPlanta()" class="text-danger fw-bold">
+            <i class="bi bi-trash-fill"></i> Remover Planta
+          </li>
+        }
       </ul>
     </div>
   }
