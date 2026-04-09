@@ -176,13 +176,91 @@
           <i class="bi bi-cpu-fill me-2 text-primary"></i>
           <span>Configurações de IoT e Planta</span>
         </div>
-        <p class="text-muted mt-3">
-          As configurações de sensores e planta são gerenciadas diretamente na tela de
-          <strong>Sensores IoT</strong>.
+
+        <p class="text-muted mt-3 mb-4">
+          Siga o passo a passo abaixo para configurar um novo sensor ESP32 no sistema EcoMonitor.
         </p>
-        <a routerLink="/sensores-iot" class="btn btn-primary mt-3">
-          <i class="bi bi-cpu-fill me-2"></i>Ir para Sensores IoT
-        </a>
+
+        <div class="iot-guide">
+          <div class="guide-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h6><i class="bi bi-wifi me-2 text-primary"></i>Configure o Firmware da ESP32</h6>
+              <p>
+                No código da ESP32, defina a URL da API:
+                <code>https://ecomonitor-iot-production.up.railway.app/api/Sensores</code>
+                e insira a API Key no header <code>X-Api-Key</code>. Certifique-se de que o Wi-Fi
+                está configurado corretamente.
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h6><i class="bi bi-map me-2 text-primary"></i>Faça Upload da Planta Baixa</h6>
+              <p>
+                Na tela de <strong>Sensores IoT</strong>, clique com o botão direito sobre o mapa e
+                selecione <strong>"Upload da Planta"</strong>. Insira a URL pública da imagem da
+                planta baixa (PNG, JPG ou SVG). A imagem será exibida como fundo do mapa.
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h6>
+                <i class="bi bi-pin-map-fill me-2 text-primary"></i>Posicione o Sensor na Planta
+              </h6>
+              <p>
+                Ainda na tela de <strong>Sensores IoT</strong>, clique com o botão direito no local
+                exato da planta onde o sensor está instalado fisicamente. Selecione
+                <strong>"Adicionar Equipamento"</strong>, informe o ID da ESP32 (ex:
+                <code>ESP32-01</code>) e o nome do local (ex: <code>Entrada</code>). O sensor será
+                fixado nessa posição.
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h6><i class="bi bi-lightning-charge-fill me-2 text-primary"></i>Ligue a ESP32</h6>
+              <p>
+                Com o sensor pré-cadastrado no sistema, ligue a ESP32. Ela irá se conectar ao Wi-Fi
+                e começar a enviar leituras automaticamente. O ícone do sensor na planta ficará
+                ativo e exibirá os dados em tempo real ao passar o mouse.
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-step">
+            <div class="step-number">5</div>
+            <div class="step-content">
+              <h6>
+                <i class="bi bi-check-circle-fill me-2 text-success"></i>Verifique no Dashboard
+              </h6>
+              <p>
+                Acesse o <strong>Dashboard</strong> para confirmar que os dados estão chegando. O
+                indicador
+                <span class="badge bg-success-subtle text-success border border-success px-2"
+                  >SISTEMA ONLINE</span
+                >
+                aparecerá quando a última leitura tiver menos de 60 segundos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+          <a routerLink="/sensores-iot" class="btn btn-primary">
+            <i class="bi bi-cpu-fill me-2"></i>Ir para Sensores IoT
+          </a>
+          <a routerLink="/dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-grid-1x2-fill me-2"></i>Ver Dashboard
+          </a>
+        </div>
       </div>
     </div>
 
@@ -191,6 +269,117 @@
         <div class="content-card-header">
           <i class="bi bi-info-circle-fill me-2 text-primary"></i>
           <span>Níveis de Permissão</span>
+        </div>
+
+        <p class="text-muted mt-3 mb-4">
+          O sistema EcoMonitor possui dois níveis de acesso. Veja abaixo o que cada perfil pode
+          fazer:
+        </p>
+
+        <div class="permission-table">
+          <div class="perm-header">
+            <span>Funcionalidade</span>
+            <span class="text-center"> <i class="bi bi-eye-fill text-info me-1"></i>Cliente </span>
+            <span class="text-center">
+              <i class="bi bi-shield-fill-check text-warning me-1"></i>Admin
+            </span>
+          </div>
+
+          <div class="perm-row">
+            <span><i class="bi bi-grid-1x2-fill me-2 text-muted"></i>Visualizar Dashboard</span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span><i class="bi bi-cpu-fill me-2 text-muted"></i>Visualizar Sensores IoT</span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span
+              ><i class="bi bi-thermometer-half me-2 text-muted"></i>Ver dados em tempo real</span
+            >
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span
+              ><i class="bi bi-pin-map-fill me-2 text-muted"></i>Adicionar sensor na planta</span
+            >
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span><i class="bi bi-trash-fill me-2 text-muted"></i>Remover sensor da planta</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span
+              ><i class="bi bi-upload me-2 text-muted"></i>Upload / Remoção da planta baixa</span
+            >
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span><i class="bi bi-people-fill me-2 text-muted"></i>Gerenciar usuários</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span><i class="bi bi-person-plus-fill me-2 text-muted"></i>Criar novos usuários</span>
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+
+          <div class="perm-row">
+            <span
+              ><i class="bi bi-shield-lock-fill me-2 text-muted"></i>Acessar Painel
+              Administrativo</span
+            >
+            <span class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></span>
+            <span class="text-center"
+              ><i class="bi bi-check-circle-fill text-success fs-5"></i
+            ></span>
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 rounded-3" style="background: #fff8e1; border-left: 4px solid #ffc107">
+          <p class="mb-0 small">
+            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+            <strong>Atenção:</strong> Apenas administradores podem criar ou remover outros usuários.
+            Para solicitar acesso ou alterar permissões, entre em contato com o administrador do
+            sistema.
+          </p>
         </div>
       </div>
     </div>

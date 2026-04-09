@@ -74,9 +74,9 @@ export class SensoresIot implements OnInit {
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Normalização: Agora usamos pos_x/pos_y que vem do DTO corrigido
-            x: s.pos_x ?? 0,
-            y: s.pos_y ?? 0,
+            // Normalização: Tratando formatos camelCase (padrão C#), PascalCase e snake_case
+            x: s.pos_x ?? s.posX ?? s.PosX ?? 0,
+            y: s.pos_y ?? s.posY ?? s.PosY ?? 0,
             id: s.id || s.Id,
           }));
           console.log('Sensores renderizados:', this.sensoresNaPlanta);
@@ -183,6 +183,10 @@ export class SensoresIot implements OnInit {
       const payload = {
         id: this.novoSensor.id.trim(),
         nome: this.novoSensor.nome,
+        // Padrão que o backend em C# entende nativamente (camelCase)
+        posX: Number(this.sensorX.toFixed(2)),
+        posY: Number(this.sensorY.toFixed(2)),
+        // Mantido como fallback caso alguma outra rota ainda espere esse formato
         pos_x: Number(this.sensorX.toFixed(2)),
         pos_y: Number(this.sensorY.toFixed(2)),
       };
@@ -230,16 +234,18 @@ export class SensoresIot implements OnInit {
 
   // --- MÉTODOS ADICIONADOS PARA RESOLVER ERROS DE COMPILAÇÃO ---
   configurarMapa() {
-    const url = prompt('Insira a URL da imagem da planta:');
-    if (url) {
-      this.http.post(`${this.apiUrl}/Planta`, { imagemUrl: url }).subscribe({
+    const url = prompt('Insira a URL da imagem da planta (ex: https://...):');
+    if (url && url.trim()) {
+      this.http.post(`${this.apiUrl}/Planta/update`, { imagemUrl: url.trim() }).subscribe({
         next: () => {
-          this.imagemPlantaUrl = url;
+          this.imagemPlantaUrl = url.trim();
           alert('Planta atualizada com sucesso!');
         },
         error: (err) => {
           console.error('Erro ao salvar planta:', err);
-          alert('Erro ao salvar imagem da planta.');
+          alert(
+            'Erro ao salvar imagem da planta. Verifique se você tem permissão de administrador.',
+          );
         },
       });
     }
@@ -247,14 +253,17 @@ export class SensoresIot implements OnInit {
 
   removerPlanta() {
     if (confirm('Deseja realmente remover a imagem da planta?')) {
-      this.http.delete(`${this.apiUrl}/Planta`).subscribe({
+      // Usa o endpoint POST /update com URL vazia para limpar a planta
+      this.http.post(`${this.apiUrl}/Planta/update`, { imagemUrl: '' }).subscribe({
         next: () => {
           this.imagemPlantaUrl = '';
-          alert('Imagem da planta removida.');
+          alert('Imagem da planta removida com sucesso.');
         },
         error: (err) => {
           console.error('Erro ao remover planta:', err);
-          alert('Erro ao remover imagem da planta.');
+          alert(
+            'Erro ao remover imagem da planta. Verifique se você tem permissão de administrador.',
+          );
         },
       });
     }

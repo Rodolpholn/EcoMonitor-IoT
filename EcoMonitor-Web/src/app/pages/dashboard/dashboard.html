@@ -126,7 +126,7 @@
             <tr *ngFor="let item of leituras.slice(-5).reverse()" class="border-top-light">
               <td class="ps-0 fw-bold">{{ item.id }}</td>
               <td class="text-secondary">
-                {{ item.updated_at || item.data_hora | date: 'HH:mm:ss' }}
+                {{ item.safeDate | date: 'HH:mm:ss' }}
               </td>
               <td>
                 <span

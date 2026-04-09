@@ -24,6 +24,9 @@ namespace EcoMonitor.Api.Models
         [Column("tvoc")]
         public double? Tvoc { get; set; }
 
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+
         [Column("temp_aht20")]
         public double? TempAht20 { get; set; }
 

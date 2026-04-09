@@ -19,7 +19,10 @@ export class SensorService {
   // 2. Método para o DASHBOARD cadastrar um novo sensor na planta
   // Alterado para bater no endpoint /Cadastrar do seu Controller C#
   salvarSensor(sensor: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/Cadastrar`, sensor);
+    return this.http.post<any>(
+      'https://ecomonitor-iot-production.up.railway.app/api/Sensores/Cadastrar',
+      sensor,
+    );
   }
 
   // 3. Exclui um sensor da planta baixa

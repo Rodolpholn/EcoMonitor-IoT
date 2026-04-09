@@ -39,6 +39,7 @@ namespace EcoMonitor.Api.Controllers
                     PosY = s.PosY,
                     Co2 = s.Co2,
                     Tvoc = s.Tvoc,
+                    UpdatedAt = s.UpdatedAt,
                     TempAht20 = s.TempAht20,
                     UmidadeAht20 = s.UmidadeAht20,
                     PressaoBmp280 = s.PressaoBmp280,
@@ -60,14 +61,39 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
+        // DTO para receber o cadastro do Angular (com mapeamento correto de snake_case)
+        public class CadastrarSensorRequest
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("id")]
+            public string Id { get; set; } = string.Empty;
+
+            [System.Text.Json.Serialization.JsonPropertyName("nome")]
+            public string? Nome { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("pos_x")]
+            public double? PosX { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("pos_y")]
+            public double? PosY { get; set; }
+        }
+
         // POST: api/Sensores/Cadastrar (Ação do Dashboard Angular)
         [HttpPost("Cadastrar")]
         [EndpointSummary("Fixa a posição de um sensor na planta (Dashboard)")]
-        public async Task<ActionResult> CadastrarSensor([FromBody] SensorModel sensor)
+        public async Task<ActionResult> CadastrarSensor([FromBody] CadastrarSensorRequest request)
         {
             try
             {
-                Console.WriteLine($"[ANGULAR] Cadastrando ID: {sensor.Id} em X:{sensor.PosX} Y:{sensor.PosY}");
+                Console.WriteLine($"[ANGULAR] Cadastrando ID: {request.Id} em X:{request.PosX} Y:{request.PosY}");
+
+                // Mapeia o DTO para o SensorModel do Postgrest
+                var sensor = new SensorModel
+                {
+                    Id = request.Id,
+                    Nome = request.Nome,
+                    PosX = request.PosX,
+                    PosY = request.PosY
+                };
 
                 var options = new QueryOptions { Returning = QueryOptions.ReturnType.Minimal };
                 

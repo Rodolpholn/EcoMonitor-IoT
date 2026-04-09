@@ -21,6 +21,9 @@ namespace EcoMonitor.Api.Models
     // Novos campos reais da ESP32
     [JsonPropertyName("co2")] public double? Co2 { get; set; }
     [JsonPropertyName("tvoc")] public double? Tvoc { get; set; }
+
+    [JsonPropertyName("updated_at")]
+    public DateTime? UpdatedAt { get; set; }
     [JsonPropertyName("temp_aht20")] public double? TempAht20 { get; set; }
     [JsonPropertyName("umidade_aht20")] public double? UmidadeAht20 { get; set; }
     [JsonPropertyName("pressao_bmp280")] public double? PressaoBmp280 { get; set; }

@@ -54,12 +54,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sensorService.getLeituras().subscribe({
       next: (dados) => {
         if (dados && dados.length > 0) {
-          // 1. Ordenação usando 'updated_at' (padrão do seu Supabase)
-          this.leituras = [...dados]
+          // Normalização da data: Troca espaço por 'T' para garantir formato ISO 8601 exigido pelo JS e Angular
+          const dadosNormalizados = dados.map((item: any) => {
+            let rawDate = item.updated_at || item.updatedAt || item.UpdatedAt;
+            if (typeof rawDate === 'string') {
+              rawDate = rawDate.replace(' ', 'T');
+            }
+            return { ...item, safeDate: rawDate };
+          });
+
+          // 1. Ordenação usando 'safeDate'
+          this.leituras = [...dadosNormalizados]
             .sort(
-              (a: any, b: any) =>
-                new Date(a.updated_at || a.data_hora).getTime() -
-                new Date(b.updated_at || b.data_hora).getTime(),
+              (a: any, b: any) => new Date(a.safeDate).getTime() - new Date(b.safeDate).getTime(),
             )
             .slice(-50);
 
@@ -68,8 +75,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           // 2. Atualizar lógica de negócio
           this.atualizarCardsResumo(ultimaLeitura);
 
-          // Usa 'updated_at' para o status de conexão
-          this.checkSystemStatus(ultimaLeitura.updated_at || ultimaLeitura.data_hora);
+          // Usa 'safeDate' para o status de conexão
+          this.checkSystemStatus(ultimaLeitura.safeDate);
 
           // 3. Renderizar gráfico e forçar detecção de mudanças no Angular
           requestAnimationFrame(() => {
@@ -113,9 +120,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   renderizarGrafico() {
     if (!this.canvas || this.leituras.length === 0) return;
 
-    // LABELS: Agora usando 'updated_at' para o gráfico "andar" no eixo X
+    // LABELS: Agora usando 'safeDate' para o gráfico "andar" no eixo X
     const labels = this.leituras.map((item) => {
-      const d = new Date(item.updated_at || item.data_hora);
+      const d = new Date(item.safeDate);
       return isNaN(d.getTime())
         ? '---'
         : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -142,7 +149,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             backgroundColor: 'rgba(13, 110, 253, 0.1)',
             fill: true,
             tension: 0.4,
-            pointRadius: 3,
+            pointRadius: 4,
             pointBackgroundColor: '#0d6efd',
           },
         ],
