@@ -34,4 +34,12 @@ export class SensorService {
   getLeituras(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
+
+  // 5. Edita um sensor existente
+  editarSensor(payload: any): Observable<any> {
+    return this.http.put<any>(
+      'https://ecomonitor-iot-production.up.railway.app/api/Sensores/Editar',
+      payload,
+    );
+  }
 }

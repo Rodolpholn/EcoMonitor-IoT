@@ -4,6 +4,12 @@
   (contextmenu)="onRightClick($event)"
   (mousedown)="startDragging($event)"
 >
+  <!-- Alerta Moderno de Status do Sistema -->
+  <div class="system-status-badge shadow-lg" [ngClass]="isOnline ? 'online' : 'offline'">
+    <i class="bi" [ngClass]="isOnline ? 'bi-cloud-check-fill' : 'bi-cloud-slash-fill'"></i>
+    {{ isOnline ? 'SISTEMA ONLINE' : 'SISTEMA OFFLINE' }}
+  </div>
+
   <div
     class="sensor-overlay"
     [style.backgroundImage]="
@@ -27,8 +33,20 @@
         (contextmenu)="onRightClickSensor($event, s)"
         (mousedown)="$event.stopPropagation()"
       >
-        <i class="bi bi-cpu-fill text-primary" draggable="false"></i>
-        <div class="sensor-label">{{ s.nome }}</div>
+        <i
+          class="bi"
+          [ngClass]="{
+            'bi-cpu-fill': !isSensorOffline(s),
+            'bi-cpu': isSensorOffline(s),
+            'text-secondary': isSensorOffline(s),
+            'text-primary': !isSensorOffline(s) && !isEmAlerta(s),
+            'blink-alert': !isSensorOffline(s) && isEmAlerta(s),
+          }"
+          draggable="false"
+        ></i>
+        <div class="sensor-label" [ngClass]="{ 'text-muted opacity-75': isSensorOffline(s) }">
+          {{ s.nome }}
+        </div>
 
         <div class="sensor-data-hover shadow-lg">
           <div
@@ -101,6 +119,21 @@
               Sistema
             </div>
             <div class="d-flex justify-content-between align-items-center mb-1">
+              <span>
+                <i
+                  class="bi bi-wifi me-1"
+                  [ngClass]="isSensorOffline(s) ? 'text-secondary' : 'text-success'"
+                ></i
+                >Status:
+              </span>
+              <span
+                class="fw-bold"
+                [ngClass]="isSensorOffline(s) ? 'text-secondary' : 'text-success'"
+              >
+                {{ isSensorOffline(s) ? 'OFFLINE' : 'ONLINE' }}
+              </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
               <span><i class="bi bi-battery-full text-success me-1"></i>Bateria:</span>
               <span class="fw-bold text-success">{{ s.tensao_bateria | number: '1.1-1' }}V</span>
             </div>
@@ -167,11 +200,12 @@
       [style.left.px]="menuX"
       (click)="$event.stopPropagation()"
     >
-      <div class="menu-header px-3 py-1 bg-light fw-bold border-bottom small">
+      <div class="menu-header px-3 py-2 fw-bold small text-center">
         {{ sensorParaEditar?.nome }}
       </div>
       <ul>
         <li (click)="editarSensor()"><i class="bi bi-pencil"></i> Editar</li>
+        <li (click)="abrirModalAlertas()"><i class="bi bi-bell"></i> Editar Alertas</li>
         <li (click)="excluirSensor()" class="text-danger"><i class="bi bi-trash"></i> Excluir</li>
       </ul>
     </div>
@@ -182,7 +216,12 @@
   <div class="modal-backdrop" (click)="showModal = false">
     <div class="modal-popup shadow-lg" (click)="$event.stopPropagation()">
       <div class="modal-header bg-primary text-white py-2 px-3">
-        <h6 class="modal-title m-0 text-white" style="font-size: 0.9rem">Novo Equipamento</h6>
+        <h6
+          class="modal-title m-0 text-white fw-bold"
+          style="font-size: 0.9rem; letter-spacing: 0.5px"
+        >
+          <i class="bi bi-cpu me-1"></i> {{ isEditing ? 'Editar Equipamento' : 'Novo Equipamento' }}
+        </h6>
         <button
           type="button"
           class="btn-close btn-close-white"
@@ -191,7 +230,7 @@
       </div>
       <div class="modal-body p-3">
         <div class="mb-2">
-          <label class="small fw-bold mb-1" style="font-size: 0.7rem">ID ESP32 (MAC):</label>
+          <label class="form-label mb-1">ID ESP32 (MAC):</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -200,7 +239,7 @@
           />
         </div>
         <div class="mb-3">
-          <label class="small fw-bold mb-1" style="font-size: 0.7rem">Nome Local:</label>
+          <label class="form-label mb-1">Nome Local:</label>
           <input
             type="text"
             class="form-control form-control-sm"
@@ -209,20 +248,95 @@
           />
         </div>
       </div>
-      <div class="modal-footer py-2 bg-light">
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="showModal = false">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" (click)="salvarEquipamento()">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showModalAlertas) {
+  <div class="modal-backdrop" (click)="showModalAlertas = false">
+    <div class="modal-popup shadow-lg" style="width: 340px" (click)="$event.stopPropagation()">
+      <div class="modal-header bg-warning text-dark py-2 px-3">
+        <h6
+          class="modal-title m-0 fw-bold text-dark"
+          style="font-size: 0.9rem; letter-spacing: 0.5px"
+        >
+          <i class="bi bi-bell-fill me-1"></i> Editar Alertas
+        </h6>
+        <button type="button" class="btn-close" (click)="showModalAlertas = false"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="mb-3">
+          <label class="form-label mb-1">Selecione o Equipamento:</label>
+          <select
+            class="form-select form-select-sm"
+            [(ngModel)]="alertaSelecionadoId"
+            (change)="carregarAlertaSelecionado()"
+          >
+            <option value="">Selecione...</option>
+            @for (s of sensoresNaPlanta; track s.id) {
+              <option [value]="s.id">{{ s.nome || s.id }}</option>
+            }
+          </select>
+        </div>
+
+        @if (alertaSelecionadoId) {
+          <div class="row g-2">
+            <div class="col-6 mb-2">
+              <label class="form-label mb-1">Temp Max (&deg;C):</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="alertaForm.tempMax"
+              />
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label mb-1">Temp Min (&deg;C):</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="alertaForm.tempMin"
+              />
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label mb-1">Umid Max (%):</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="alertaForm.umidadeMax"
+              />
+            </div>
+            <div class="col-6 mb-2">
+              <label class="form-label mb-1">Umid Min (%):</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="alertaForm.umidadeMin"
+              />
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal-footer py-2">
         <button
           type="button"
-          class="btn btn-sm btn-secondary"
-          style="font-size: 0.7rem"
-          (click)="showModal = false"
+          class="btn btn-sm btn-outline-light"
+          (click)="showModalAlertas = false"
         >
           Cancelar
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-primary"
-          style="font-size: 0.7rem"
-          (click)="salvarEquipamento()"
+          class="btn btn-sm btn-warning fw-bold"
+          [disabled]="!alertaSelecionadoId"
+          (click)="salvarAlertas()"
         >
           Salvar
         </button>

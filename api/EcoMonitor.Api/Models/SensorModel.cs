@@ -59,5 +59,17 @@ namespace EcoMonitor.Api.Models
 
         [Column("sensor_porta")]
         public bool? SensorPorta { get; set; }
+
+        [Column("temp_max")]
+        public double? TempMax { get; set; }
+
+        [Column("temp_min")]
+        public double? TempMin { get; set; }
+
+        [Column("umidade_max")]
+        public double? UmidadeMax { get; set; }
+
+        [Column("umidade_min")]
+        public double? UmidadeMin { get; set; }
     }
 }

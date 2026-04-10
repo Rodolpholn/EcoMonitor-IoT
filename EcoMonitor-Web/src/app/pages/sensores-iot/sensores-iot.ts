@@ -18,6 +18,8 @@ export class SensoresIot implements OnInit {
   showMenu = false;
   showSensorMenu = false;
   showModal = false;
+  showModalAlertas = false;
+  isOnline = true; // Controla o status de comunicação com a API
 
   // Coordenadas para posicionamento
   menuX = 0;
@@ -38,6 +40,17 @@ export class SensoresIot implements OnInit {
   novoSensor = { id: '', nome: '' };
   sensorParaEditar: any = null;
   sensoresNaPlanta: any[] = [];
+
+  isEditing = false;
+  idAntigo = '';
+
+  alertaSelecionadoId = '';
+  alertaForm = {
+    tempMax: null as number | null,
+    tempMin: null as number | null,
+    umidadeMax: null as number | null,
+    umidadeMin: null as number | null,
+  };
 
   constructor(
     private sensorService: SensorService,
@@ -71,6 +84,7 @@ export class SensoresIot implements OnInit {
   carregarSensores() {
     this.sensorService.getSensores().subscribe({
       next: (dados) => {
+        this.isOnline = true; // Se a requisição deu certo, a API está online
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
@@ -82,7 +96,10 @@ export class SensoresIot implements OnInit {
           console.log('Sensores renderizados:', this.sensoresNaPlanta);
         }
       },
-      error: (err) => console.error('Erro buscar sensores:', err),
+      error: (err) => {
+        this.isOnline = false; // Se a requisição falhou, o sistema perdeu a comunicação
+        console.error('Erro buscar sensores:', err);
+      },
     });
   }
 
@@ -174,36 +191,61 @@ export class SensoresIot implements OnInit {
   // --- CRUD DE SENSORES ---
   addEquipamento() {
     this.showMenu = false;
+    this.isEditing = false;
+    this.idAntigo = '';
     this.showModal = true;
     this.novoSensor = { id: '', nome: '' };
   }
 
   salvarEquipamento() {
     if (this.novoSensor.id && this.novoSensor.nome) {
-      const payload = {
-        id: this.novoSensor.id.trim(),
-        nome: this.novoSensor.nome,
-        // Padrão que o backend em C# entende nativamente (camelCase)
-        posX: Number(this.sensorX.toFixed(2)),
-        posY: Number(this.sensorY.toFixed(2)),
-        // Mantido como fallback caso alguma outra rota ainda espere esse formato
-        pos_x: Number(this.sensorX.toFixed(2)),
-        pos_y: Number(this.sensorY.toFixed(2)),
-      };
+      if (this.isEditing) {
+        const payload = {
+          id_antigo: this.idAntigo,
+          id_novo: this.novoSensor.id.trim(),
+          nome: this.novoSensor.nome,
+        };
 
-      console.log('Enviando dados para cadastro:', payload);
+        console.log('Enviando dados para edição:', payload);
 
-      this.sensorService.salvarSensor(payload).subscribe({
-        next: () => {
-          this.showModal = false;
-          this.novoSensor = { id: '', nome: '' };
-          setTimeout(() => this.carregarSensores(), 800);
-        },
-        error: (err) => {
-          console.error('Erro ao salvar sensor:', err);
-          alert('Não foi possível salvar. Verifique se o ID já existe ou se há erro de conexão.');
-        },
-      });
+        this.sensorService.editarSensor(payload).subscribe({
+          next: () => {
+            this.showModal = false;
+            this.isEditing = false;
+            this.novoSensor = { id: '', nome: '' };
+            setTimeout(() => this.carregarSensores(), 800);
+          },
+          error: (err) => {
+            console.error('Erro ao editar sensor:', err);
+            alert('Não foi possível editar. Verifique se o novo ID já existe ou erro na conexão.');
+          },
+        });
+      } else {
+        const payload = {
+          id: this.novoSensor.id.trim(),
+          nome: this.novoSensor.nome,
+          // Padrão que o backend em C# entende nativamente (camelCase)
+          posX: Number(this.sensorX.toFixed(2)),
+          posY: Number(this.sensorY.toFixed(2)),
+          // Mantido como fallback caso alguma outra rota ainda espere esse formato
+          pos_x: Number(this.sensorX.toFixed(2)),
+          pos_y: Number(this.sensorY.toFixed(2)),
+        };
+
+        console.log('Enviando dados para cadastro:', payload);
+
+        this.sensorService.salvarSensor(payload).subscribe({
+          next: () => {
+            this.showModal = false;
+            this.novoSensor = { id: '', nome: '' };
+            setTimeout(() => this.carregarSensores(), 800);
+          },
+          error: (err) => {
+            console.error('Erro ao salvar sensor:', err);
+            alert('Não foi possível salvar. Verifique se o ID já existe ou se há erro de conexão.');
+          },
+        });
+      }
     }
   }
 
@@ -229,7 +271,13 @@ export class SensoresIot implements OnInit {
   }
 
   editarSensor() {
-    alert('Edição disponível em breve.');
+    if (!this.sensorParaEditar) return;
+    this.showSensorMenu = false;
+    this.isEditing = true;
+    this.idAntigo = this.sensorParaEditar.id;
+
+    this.novoSensor = { id: this.sensorParaEditar.id, nome: this.sensorParaEditar.nome };
+    this.showModal = true;
   }
 
   // --- MÉTODOS ADICIONADOS PARA RESOLVER ERROS DE COMPILAÇÃO ---
@@ -267,5 +315,104 @@ export class SensoresIot implements OnInit {
         },
       });
     }
+  }
+
+  // --- GESTÃO DE ALERTAS ---
+  abrirModalAlertas() {
+    this.showMenu = false;
+    this.showSensorMenu = false;
+    this.showModalAlertas = true;
+
+    if (this.sensorParaEditar) {
+      this.alertaSelecionadoId = this.sensorParaEditar.id;
+      this.carregarAlertaSelecionado();
+    } else {
+      this.alertaSelecionadoId = '';
+      this.alertaForm = { tempMax: null, tempMin: null, umidadeMax: null, umidadeMin: null };
+    }
+  }
+
+  carregarAlertaSelecionado() {
+    const sensor = this.sensoresNaPlanta.find((s) => s.id === this.alertaSelecionadoId);
+    if (sensor) {
+      this.alertaForm.tempMax = sensor.tempMax ?? sensor.temp_max ?? null;
+      this.alertaForm.tempMin = sensor.tempMin ?? sensor.temp_min ?? null;
+      this.alertaForm.umidadeMax = sensor.umidadeMax ?? sensor.umidade_max ?? null;
+      this.alertaForm.umidadeMin = sensor.umidadeMin ?? sensor.umidade_min ?? null;
+    }
+  }
+
+  salvarAlertas() {
+    if (!this.alertaSelecionadoId) return;
+    const payload = {
+      id: this.alertaSelecionadoId.trim(),
+      temp_max: this.alertaForm.tempMax,
+      temp_min: this.alertaForm.tempMin,
+      umidade_max: this.alertaForm.umidadeMax,
+      umidade_min: this.alertaForm.umidadeMin,
+    };
+
+    this.http.post(`${this.apiUrl}/Sensores/Alertas`, payload).subscribe({
+      next: () => {
+        this.showModalAlertas = false;
+        setTimeout(() => this.carregarSensores(), 800);
+      },
+      error: (err) => {
+        console.error('Erro ao salvar alertas:', err);
+        alert('Erro ao salvar alertas.');
+      },
+    });
+  }
+
+  isEmAlerta(s: any): boolean {
+    const tMax = s.tempMax ?? s.temp_max;
+    const tMin = s.tempMin ?? s.temp_min;
+    const uMax = s.umidadeMax ?? s.umidade_max;
+    const uMin = s.umidadeMin ?? s.umidade_min;
+
+    if (
+      tMax != null &&
+      ((s.temp_aht20 != null && s.temp_aht20 > tMax) ||
+        (s.temp_sht40 != null && s.temp_sht40 > tMax) ||
+        (s.temp_sht41 != null && s.temp_sht41 > tMax))
+    )
+      return true;
+    if (
+      tMin != null &&
+      ((s.temp_aht20 != null && s.temp_aht20 < tMin) ||
+        (s.temp_sht40 != null && s.temp_sht40 < tMin) ||
+        (s.temp_sht41 != null && s.temp_sht41 < tMin))
+    )
+      return true;
+    if (
+      uMax != null &&
+      ((s.umidade_aht20 != null && s.umidade_aht20 > uMax) ||
+        (s.umidade_sht40 != null && s.umidade_sht40 > uMax))
+    )
+      return true;
+    if (
+      uMin != null &&
+      ((s.umidade_aht20 != null && s.umidade_aht20 < uMin) ||
+        (s.umidade_sht40 != null && s.umidade_sht40 < uMin))
+    )
+      return true;
+    return false;
+  }
+
+  isSensorOffline(s: any): boolean {
+    const updatedAt = s.updatedAt ?? s.updated_at;
+    if (!updatedAt) return true; // Se nunca mandou leitura, está offline
+
+    // Garante que o Date do JS interprete a data em UTC (Evitando bugs de fuso horário local)
+    let dateStr = String(updatedAt);
+    if (!dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:?\d{2}$/)) {
+      dateStr += 'Z';
+    }
+
+    const lastUpdate = new Date(dateStr).getTime();
+    const now = new Date().getTime();
+
+    const diffMinutes = (now - lastUpdate) / (1000 * 60);
+    return diffMinutes > 15; // Retorna true se passou de 15 minutos
   }
 }

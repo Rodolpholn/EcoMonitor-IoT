@@ -35,5 +35,10 @@ namespace EcoMonitor.Api.Models
     [JsonPropertyName("corrente_compressor")] public double? CorrenteCompressor { get; set; }
     [JsonPropertyName("tensao_compressor")] public double? TensaoCompressor { get; set; }
     [JsonPropertyName("sensor_porta")] public bool? SensorPorta { get; set; }
+    
+    [JsonPropertyName("temp_max")] public double? TempMax { get; set; }
+    [JsonPropertyName("temp_min")] public double? TempMin { get; set; }
+    [JsonPropertyName("umidade_max")] public double? UmidadeMax { get; set; }
+    [JsonPropertyName("umidade_min")] public double? UmidadeMin { get; set; }
     }
 }
