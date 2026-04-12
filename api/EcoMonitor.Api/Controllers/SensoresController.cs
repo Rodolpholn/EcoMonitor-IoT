@@ -238,11 +238,30 @@ namespace EcoMonitor.Api.Controllers
             }
         }
 
+        // DTO para receber a telemetria da ESP32 (Suporta o CamelCase que a placa já envia)
+        public class TelemetriaEsp32Request
+        {
+            public string Id { get; set; } = string.Empty;
+            public double? Co2 { get; set; }
+            public double? Tvoc { get; set; }
+            public double? TempAht20 { get; set; }
+            public double? UmidadeAht20 { get; set; }
+            public double? PressaoBmp280 { get; set; }
+            public double? TempSht40 { get; set; }
+            public double? UmidadeSht40 { get; set; }
+            public double? TempSht41 { get; set; }
+            public double? Luminosidade { get; set; }
+            public double? TensaoBateria { get; set; }
+            public double? CorrenteCompressor { get; set; }
+            public double? TensaoCompressor { get; set; }
+            public bool? SensorPorta { get; set; }
+        }
+
         // POST: api/Sensores (Ação da ESP32)
         [AllowAnonymous]
         [HttpPost]
         [EndpointSummary("Recebe telemetria da ESP32 (Não altera posição)")]
-        public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
+        public async Task<ActionResult> SalvarSensor([FromBody] TelemetriaEsp32Request request)
         {
             // Validação de entrada para telemetria
             if (!ModelState.IsValid)
@@ -260,7 +279,7 @@ namespace EcoMonitor.Api.Controllers
                     }
                 }
 
-                var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == sensor.Id).Get();
+                var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == request.Id).Get();
 
                 if (check.Models.Count == 0)
                 {
@@ -268,22 +287,30 @@ namespace EcoMonitor.Api.Controllers
                 }
 
                 var sensorExistente = check.Models[0];
-                sensor.PosX = sensorExistente.PosX;
-                sensor.PosY = sensorExistente.PosY;
-                sensor.Nome = sensorExistente.Nome;
-                sensor.TempMax = sensorExistente.TempMax;
-                sensor.TempMin = sensorExistente.TempMin;
-                sensor.UmidadeMax = sensorExistente.UmidadeMax;
-                sensor.UmidadeMin = sensorExistente.UmidadeMin;
 
-                sensor.UpdatedAt = DateTime.UtcNow;
+                // Atualiza APENAS os dados de telemetria enviados pela ESP32, ignorando os nulos
+                sensorExistente.Co2 = request.Co2 ?? sensorExistente.Co2;
+                sensorExistente.Tvoc = request.Tvoc ?? sensorExistente.Tvoc;
+                sensorExistente.TempAht20 = request.TempAht20 ?? sensorExistente.TempAht20;
+                sensorExistente.UmidadeAht20 = request.UmidadeAht20 ?? sensorExistente.UmidadeAht20;
+                sensorExistente.PressaoBmp280 = request.PressaoBmp280 ?? sensorExistente.PressaoBmp280;
+                sensorExistente.TempSht40 = request.TempSht40 ?? sensorExistente.TempSht40;
+                sensorExistente.UmidadeSht40 = request.UmidadeSht40 ?? sensorExistente.UmidadeSht40;
+                sensorExistente.TempSht41 = request.TempSht41 ?? sensorExistente.TempSht41;
+                sensorExistente.Luminosidade = request.Luminosidade ?? sensorExistente.Luminosidade;
+                sensorExistente.TensaoBateria = request.TensaoBateria ?? sensorExistente.TensaoBateria;
+                sensorExistente.CorrenteCompressor = request.CorrenteCompressor ?? sensorExistente.CorrenteCompressor;
+                sensorExistente.TensaoCompressor = request.TensaoCompressor ?? sensorExistente.TensaoCompressor;
+                sensorExistente.SensorPorta = request.SensorPorta ?? sensorExistente.SensorPorta;
+
+                sensorExistente.UpdatedAt = DateTime.UtcNow;
 
                 await _supabaseClient
                     .From<SensorModel>()
-                    .Where(x => x.Id == sensor.Id)
-                    .Update(sensor);
+                    .Where(x => x.Id == request.Id)
+                    .Update(sensorExistente);
 
-                return Ok(new { mensagem = "Leitura processada!", id = sensor.Id });
+                return Ok(new { mensagem = "Leitura processada!", id = request.Id });
             }
             catch (Exception ex)
             {
