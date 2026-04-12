@@ -6,8 +6,8 @@ namespace EcoMonitor.Api.Models
     [Table("configuracoes_planta")]
     public class PlantaModel : BaseModel
     {
-        // O "false" aqui é CRUCIAL para o Upsert funcionar com ID fixo
-        [PrimaryKey("id", false)] 
+        // O "true" indica que o C# deve enviar esse ID manualmente no payload
+        [PrimaryKey("id", true)] 
         public int Id { get; set; }
 
         [Column("imagem_url")] 

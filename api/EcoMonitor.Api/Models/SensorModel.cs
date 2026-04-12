@@ -7,7 +7,7 @@ namespace EcoMonitor.Api.Models
     [Table("sensores_iot")]
     public class SensorModel : BaseModel
     {
-        [PrimaryKey("id", false)]
+        [PrimaryKey("id", true)]
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
