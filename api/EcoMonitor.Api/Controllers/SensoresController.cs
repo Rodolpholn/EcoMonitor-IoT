@@ -96,6 +96,13 @@ namespace EcoMonitor.Api.Controllers
 
             try
             {
+                // Verifica se já existe um sensor com o mesmo ID para evitar sobrescrever dados do ESP acidentalmente
+                var check = await _supabaseClient.From<SensorModel>().Where(x => x.Id == request.Id).Get();
+                if (check.Models.Count > 0)
+                {
+                    return BadRequest(new { mensagem = "Erro: Já existe um equipamento cadastrado com este ID." });
+                }
+
                 Console.WriteLine($"[ANGULAR] Tentando salvar ID: {request.Id} em X:{request.PosX} Y:{request.PosY}");
 
                 // Mapeia o DTO para o SensorModel do Postgrest
@@ -107,10 +114,8 @@ namespace EcoMonitor.Api.Controllers
                     PosY = request.PosY
                 };
 
-                var options = new QueryOptions { Returning = QueryOptions.ReturnType.Minimal };
-                
-                // Realiza o Upsert (Cria se não existe, atualiza se já existe)
-                await _supabaseClient.From<SensorModel>().Upsert(sensor, options);
+                // Realiza um Insert limpo preenchendo as outras propriedades com Nulo (null)
+                await _supabaseClient.From<SensorModel>().Insert(sensor);
 
                 return Ok(new { mensagem = "Equipamento fixado na planta!", id = sensor.Id });
             }
