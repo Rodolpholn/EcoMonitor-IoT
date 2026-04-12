@@ -86,9 +86,17 @@ namespace EcoMonitor.Api.Controllers
         [EndpointSummary("Fixa a posição de um sensor na planta (Dashboard)")]
         public async Task<ActionResult> CadastrarSensor([FromBody] CadastrarSensorRequest request)
         {
+            // Validação de Modelo para capturar erros de mapeamento JSON
+            if (!ModelState.IsValid)
+            {
+                var erros = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                Console.WriteLine($"[ERRO VALIDACAO DASHBOARD] {erros}");
+                return BadRequest(new { mensagem = "Dados inválidos", detalhe = erros });
+            }
+
             try
             {
-                Console.WriteLine($"[ANGULAR] Cadastrando ID: {request.Id} em X:{request.PosX} Y:{request.PosY}");
+                Console.WriteLine($"[ANGULAR] Tentando salvar ID: {request.Id} em X:{request.PosX} Y:{request.PosY}");
 
                 // Mapeia o DTO para o SensorModel do Postgrest
                 var sensor = new SensorModel
@@ -108,6 +116,7 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERRO SUPABASE DASHBOARD] {ex.Message}");
                 return BadRequest(new { mensagem = "Erro ao cadastrar equipamento", detalhe = ex.Message });
             }
         }
@@ -180,7 +189,7 @@ namespace EcoMonitor.Api.Controllers
 
                 if (request.IdAntigo != request.IdNovo)
                 {
-                    // Como a chave primária mudou, criamos um novo registro com os mesmos dados e deletamos o antigo para não perder as referências
+                    // Como a chave primária mudou, criamos um novo registro e deletamos o antigo
                     var novoSensor = new SensorModel
                     {
                         Id = request.IdNovo,
@@ -212,7 +221,6 @@ namespace EcoMonitor.Api.Controllers
                 }
                 else
                 {
-                    // Apenas atualiza o nome se o ID continuou igual
                     sensor.Nome = request.Nome;
                     await _supabaseClient.From<SensorModel>().Where(x => x.Id == request.IdAntigo).Update(sensor);
                 }
@@ -231,9 +239,14 @@ namespace EcoMonitor.Api.Controllers
         [EndpointSummary("Recebe telemetria da ESP32 (Não altera posição)")]
         public async Task<ActionResult> SalvarSensor([FromBody] SensorModel sensor)
         {
+            // Validação de entrada para telemetria
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
-                // Correção do erro de referência nula
                 if (User.Identity?.IsAuthenticated != true)
                 {
                     if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
@@ -249,7 +262,6 @@ namespace EcoMonitor.Api.Controllers
                     return NotFound(new { mensagem = "Equipamento não pré-cadastrado." });
                 }
 
-                // Preserva as informações manuais atuais do banco para a ESP32 não apagá-las
                 var sensorExistente = check.Models[0];
                 sensor.PosX = sensorExistente.PosX;
                 sensor.PosY = sensorExistente.PosY;
@@ -259,7 +271,6 @@ namespace EcoMonitor.Api.Controllers
                 sensor.UmidadeMax = sensorExistente.UmidadeMax;
                 sensor.UmidadeMin = sensorExistente.UmidadeMin;
 
-                // Garante que o horário da leitura será atualizado no banco (Supabase) a cada POST da ESP32
                 sensor.UpdatedAt = DateTime.UtcNow;
 
                 await _supabaseClient
@@ -271,6 +282,7 @@ namespace EcoMonitor.Api.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERRO TELEMETRIA ESP32] {ex.Message}");
                 return BadRequest(new { mensagem = "Erro ao processar dados", detalhe = ex.Message });
             }
         }

@@ -84,11 +84,11 @@ export class SensoresIot implements OnInit {
   carregarSensores() {
     this.sensorService.getSensores().subscribe({
       next: (dados) => {
-        this.isOnline = true; // Se a requisição deu certo, a API está online
+        this.isOnline = true;
         if (dados && Array.isArray(dados)) {
           this.sensoresNaPlanta = dados.map((s) => ({
             ...s,
-            // Normalização: Tratando formatos camelCase (padrão C#), PascalCase e snake_case
+            // Normalização consistente para o template
             x: s.pos_x ?? s.posX ?? s.PosX ?? 0,
             y: s.pos_y ?? s.posY ?? s.PosY ?? 0,
             id: s.id || s.Id,
@@ -97,7 +97,7 @@ export class SensoresIot implements OnInit {
         }
       },
       error: (err) => {
-        this.isOnline = false; // Se a requisição falhou, o sistema perdeu a comunicação
+        this.isOnline = false;
         console.error('Erro buscar sensores:', err);
       },
     });
@@ -154,7 +154,6 @@ export class SensoresIot implements OnInit {
     const relX = event.clientX - rect.left;
     const relY = event.clientY - rect.top;
 
-    // Calcula a posição real na imagem considerando o scroll e o zoom atual
     this.sensorX = (el.scrollLeft + relX) / this.zoomLevel;
     this.sensorY = (el.scrollTop + relY) / this.zoomLevel;
 
@@ -206,8 +205,6 @@ export class SensoresIot implements OnInit {
           nome: this.novoSensor.nome,
         };
 
-        console.log('Enviando dados para edição:', payload);
-
         this.sensorService.editarSensor(payload).subscribe({
           next: () => {
             this.showModal = false;
@@ -217,22 +214,19 @@ export class SensoresIot implements OnInit {
           },
           error: (err) => {
             console.error('Erro ao editar sensor:', err);
-            alert('Não foi possível editar. Verifique se o novo ID já existe ou erro na conexão.');
+            alert('Não foi possível editar. Verifique se o novo ID já existe.');
           },
         });
       } else {
+        // CORREÇÃO: Enviando payload limpo apenas com snake_case para o C#
         const payload = {
           id: this.novoSensor.id.trim(),
           nome: this.novoSensor.nome,
-          // Padrão que o backend em C# entende nativamente (camelCase)
-          posX: Number(this.sensorX.toFixed(2)),
-          posY: Number(this.sensorY.toFixed(2)),
-          // Mantido como fallback caso alguma outra rota ainda espere esse formato
           pos_x: Number(this.sensorX.toFixed(2)),
-          pos_y: Number(this.sensorY.toFixed(2)),
+          pos_y: Number(this.sensorY.toFixed(2))
         };
 
-        console.log('Enviando dados para cadastro:', payload);
+        console.log('Enviando para cadastro:', payload);
 
         this.sensorService.salvarSensor(payload).subscribe({
           next: () => {
@@ -242,7 +236,9 @@ export class SensoresIot implements OnInit {
           },
           error: (err) => {
             console.error('Erro ao salvar sensor:', err);
-            alert('Não foi possível salvar. Verifique se o ID já existe ou se há erro de conexão.');
+            // Pega o detalhe do erro vindo do ModelState do C#
+            const detalhe = err.error?.detalhe || 'Verifique se o ID já existe.';
+            alert('Não foi possível salvar: ' + detalhe);
           },
         });
       }
@@ -280,7 +276,6 @@ export class SensoresIot implements OnInit {
     this.showModal = true;
   }
 
-  // --- MÉTODOS ADICIONADOS PARA RESOLVER ERROS DE COMPILAÇÃO ---
   configurarMapa() {
     const url = prompt('Insira a URL da imagem da planta (ex: https://...):');
     if (url && url.trim()) {
@@ -291,9 +286,7 @@ export class SensoresIot implements OnInit {
         },
         error: (err) => {
           console.error('Erro ao salvar planta:', err);
-          alert(
-            'Erro ao salvar imagem da planta. Verifique se você tem permissão de administrador.',
-          );
+          alert('Erro ao salvar imagem da planta.');
         },
       });
     }
@@ -301,7 +294,6 @@ export class SensoresIot implements OnInit {
 
   removerPlanta() {
     if (confirm('Deseja realmente remover a imagem da planta?')) {
-      // Usa o endpoint POST /update com URL vazia para limpar a planta
       this.http.post(`${this.apiUrl}/Planta/update`, { imagemUrl: '' }).subscribe({
         next: () => {
           this.imagemPlantaUrl = '';
@@ -309,9 +301,7 @@ export class SensoresIot implements OnInit {
         },
         error: (err) => {
           console.error('Erro ao remover planta:', err);
-          alert(
-            'Erro ao remover imagem da planta. Verifique se você tem permissão de administrador.',
-          );
+          alert('Erro ao remover imagem da planta.');
         },
       });
     }
@@ -401,9 +391,8 @@ export class SensoresIot implements OnInit {
 
   isSensorOffline(s: any): boolean {
     const updatedAt = s.updatedAt ?? s.updated_at;
-    if (!updatedAt) return true; // Se nunca mandou leitura, está offline
+    if (!updatedAt) return true;
 
-    // Garante que o Date do JS interprete a data em UTC (Evitando bugs de fuso horário local)
     let dateStr = String(updatedAt);
     if (!dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:?\d{2}$/)) {
       dateStr += 'Z';
@@ -413,6 +402,6 @@ export class SensoresIot implements OnInit {
     const now = new Date().getTime();
 
     const diffMinutes = (now - lastUpdate) / (1000 * 60);
-    return diffMinutes > 15; // Retorna true se passou de 15 minutos
+    return diffMinutes > 15;
   }
 }
