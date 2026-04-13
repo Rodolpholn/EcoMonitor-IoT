@@ -27,8 +27,8 @@ export class SensoresIot implements OnInit {
   sensorX = 0;
   sensorY = 0;
 
-  zoomLevel = 1.0;
-  minZoom = 0.5;
+  zoomLevel = typeof window !== 'undefined' && window.innerWidth < 768 ? window.innerWidth / 3400 : 1.0;
+  minZoom = typeof window !== 'undefined' && window.innerWidth < 768 ? window.innerWidth / 3400 : 0.5;
   maxZoom = 2.5;
 
   isDragging = false;
@@ -36,6 +36,11 @@ export class SensoresIot implements OnInit {
   startY = 0;
   scrollLeft = 0;
   scrollTop = 0;
+
+  // Variáveis para o Pinch to Zoom (Gestos de Pinça no Mobile)
+  isPinching = false;
+  initialPinchDistance = 0;
+  initialZoom = 1;
 
   novoSensor = { id: '', nome: '' };
   sensorParaEditar: any = null;
@@ -75,10 +80,44 @@ export class SensoresIot implements OnInit {
       next: (res) => {
         if (res && (res.ImagemUrl !== undefined || res.imagemUrl !== undefined)) {
           this.imagemPlantaUrl = res.ImagemUrl || res.imagemUrl;
+            this.centralizarEZoomMapa();
         }
       },
       error: (err) => console.error('Erro planta:', err),
     });
+  }
+
+  // --- AJUSTE INICIAL DO MAPA (PROPORCIONAL E CENTRALIZADO) ---
+  centralizarEZoomMapa() {
+    setTimeout(() => {
+      if (!this.mapContainer) return;
+      const el = this.mapContainer.nativeElement;
+
+      // Se for tela de celular, calcula a proporção exata para caber a planta toda na tela
+      if (window.innerWidth < 768) {
+        // A planta inteira tem 3400px de largura base no seu SCSS (3000 + 400 de respiro)
+        // Dividindo a largura da tela por 3400, temos o fator exato para encaixar perfeitamente!
+        const scaleToFit = window.innerWidth / 3400;
+        this.zoomLevel = scaleToFit;
+        this.minZoom = scaleToFit; // Bloqueia tirar zoom além do tamanho da tela
+      } else {
+        this.zoomLevel = 1.0;
+        this.minZoom = 0.5;
+      }
+
+      // Aguarda o Angular aplicar o novo zoom (style.transform) na tela
+      setTimeout(() => {
+        // As dimensões do overlay no seu SCSS são:
+        // min-width: 3000px + 400px (padding de respiro) = 3400px
+        // min-height: 2000px + 400px (padding de respiro) = 2400px
+        const contentWidth = 3400 * this.zoomLevel;
+        const contentHeight = 2400 * this.zoomLevel;
+
+        // Centraliza o scroll perfeitamente no meio do mapa
+        el.scrollLeft = (contentWidth - el.clientWidth) / 2;
+        el.scrollTop = (contentHeight - el.clientHeight) / 2;
+      }, 50);
+    }, 100);
   }
 
   carregarSensores() {
@@ -116,30 +155,72 @@ export class SensoresIot implements OnInit {
     }
   }
 
-  startDragging(e: MouseEvent) {
+  startDragging(e: any) {
     const target = e.target as HTMLElement;
-    if (e.button === 0 && !target.closest('.context-menu') && !target.closest('.sensor-icon')) {
-      this.isDragging = true;
-      const el = this.mapContainer.nativeElement;
-      this.startX = e.pageX - el.offsetLeft;
-      this.startY = e.pageY - el.offsetTop;
-      this.scrollLeft = el.scrollLeft;
-      this.scrollTop = el.scrollTop;
-      el.style.cursor = 'grabbing';
+    const isTouch = e.type === 'touchstart';
+
+    // 1. Identifica movimento de Pinça (2 dedos na tela) para o Zoom Mobile
+    if (isTouch && e.touches.length === 2) {
+      this.isPinching = true;
+      this.initialPinchDistance = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      this.initialZoom = this.zoomLevel;
+      return;
+    }
+
+    // 2. Identifica o toque simples (1 dedo) ou clique do Mouse para Arrasto
+    if ((isTouch && e.touches.length === 1) || (!isTouch && e.button === 0)) {
+      if (!target.closest('.context-menu') && !target.closest('.sensor-icon')) {
+        this.isDragging = true;
+        const el = this.mapContainer.nativeElement;
+        const pageX = isTouch ? e.touches[0].pageX : e.pageX;
+        const pageY = isTouch ? e.touches[0].pageY : e.pageY;
+
+        this.startX = pageX - el.offsetLeft;
+        this.startY = pageY - el.offsetTop;
+        this.scrollLeft = el.scrollLeft;
+        this.scrollTop = el.scrollTop;
+        el.style.cursor = 'grabbing';
+      }
     }
   }
 
   @HostListener('document:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
+  @HostListener('document:touchmove', ['$event'])
+  onMouseMove(e: any) {
+    const isTouch = e.type === 'touchmove';
+
+    // Lógica do Zoom por Pinça
+    if (isTouch && this.isPinching && e.touches.length === 2) {
+      const currentDistance = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      const scale = currentDistance / this.initialPinchDistance;
+      this.zoomLevel = Math.max(this.minZoom, Math.min(this.initialZoom * scale, this.maxZoom));
+      return;
+    }
+
     if (!this.isDragging) return;
+
+    // Lógica do Arrasto (Drag)
+    const pageX = isTouch ? e.touches[0].pageX : e.pageX;
+    const pageY = isTouch ? e.touches[0].pageY : e.pageY;
+
     const el = this.mapContainer.nativeElement;
-    el.scrollLeft = this.scrollLeft - (e.pageX - el.offsetLeft - this.startX) * 1.5;
-    el.scrollTop = this.scrollTop - (e.pageY - el.offsetTop - this.startY) * 1.5;
+    el.scrollLeft = this.scrollLeft - (pageX - el.offsetLeft - this.startX) * 1.5;
+    el.scrollTop = this.scrollTop - (pageY - el.offsetTop - this.startY) * 1.5;
   }
 
-  @HostListener('document:mouseup')
-  stopDragging() {
+  @HostListener('document:mouseup', ['$event'])
+  @HostListener('document:touchend', ['$event'])
+  stopDragging(e?: any) {
     this.isDragging = false;
+    if (e && e.type === 'touchend' && e.touches && e.touches.length < 2) {
+      this.isPinching = false;
+    }
     if (this.mapContainer) this.mapContainer.nativeElement.style.cursor = 'crosshair';
   }
 

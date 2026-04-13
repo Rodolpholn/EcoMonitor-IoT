@@ -27,12 +27,16 @@ export class Login {
 
     const { error } = await this.authService.login(this.email, this.password);
 
-    this.isLoading = false;
-
     if (error) {
+      this.isLoading = false;
       this.errorMessage = 'Erro no login: ' + error.message;
     } else {
-      this.router.navigate(['/dashboard']);
+      // O login foi concluído com sucesso, mas damos um pequeno delay (meio segundo)
+      // para garantir que o Supabase atualizou o token no navegador e o Interceptor já consegue lê-lo.
+      setTimeout(() => {
+        this.isLoading = false;
+        this.router.navigate(['/dashboard']);
+      }, 500);
     }
   }
 }

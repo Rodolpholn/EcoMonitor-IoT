@@ -106,7 +106,7 @@
           </button>
         </form>
 
-        <hr class="my-5 border-light" />
+        <hr class="my-5 tech-hr" />
 
         <div class="content-card-header mb-4">
           <i class="bi bi-people-fill me-2 text-primary"></i>
@@ -126,7 +126,7 @@
               <tr *ngFor="let user of userList">
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-bold text-dark">{{ user.Email }}</span>
+                    <span class="fw-bold text-white">{{ user.Email }}</span>
                     <small class="text-muted font-monospace" style="font-size: 0.75rem">{{
                       user.Id
                     }}</small>
@@ -373,7 +373,7 @@
           </div>
         </div>
 
-        <div class="mt-4 p-3 rounded-3" style="background: #fff8e1; border-left: 4px solid #ffc107">
+        <div class="mt-4 p-3 rounded-3 warning-glass-box">
           <p class="mb-0 small">
             <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
             <strong>Atenção:</strong> Apenas administradores podem criar ou remover outros usuários.

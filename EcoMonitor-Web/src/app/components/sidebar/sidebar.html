@@ -1,77 +1,76 @@
-<div
-  class="bg-primary text-white shadow d-none d-md-block"
-  id="sidebar-wrapper"
-  style="width: 250px; min-height: 100vh"
->
-  <div class="sidebar-heading p-4 border-bottom border-light text-center">
+<div class="desktop-sidebar d-none d-md-flex flex-column shadow-lg" id="sidebar-wrapper">
+  <div class="sidebar-brand p-4 text-center">
     <img
       src="LogoThermofrio.png"
       alt="Thermofrio Logo"
-      style="width: 100%; max-width: 180px; height: auto; object-fit: contain"
+      class="brand-logo"
     />
   </div>
 
-  <div class="list-group list-group-flush p-2" *ngIf="session$ | async as session">
+  <div class="sidebar-nav d-flex flex-column p-3 gap-2" *ngIf="session$ | async as session">
     <a
       routerLink="/dashboard"
       routerLinkActive="active-desktop"
-      class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
+      class="sidebar-link"
     >
-      <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
+      <i class="bi bi-grid-1x2-fill icon"></i> <span>Dashboard</span>
     </a>
     <a
       routerLink="/sensores-iot"
       routerLinkActive="active-desktop"
-      class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
+      class="sidebar-link"
     >
-      <i class="bi bi-cpu-fill me-2"></i> Sensores IoT
+      <i class="bi bi-cpu-fill icon"></i> <span>Sensores IoT</span>
     </a>
     <a
       *ngIf="session.role === 'admin'"
       routerLink="/admin-panel"
       routerLinkActive="active-desktop"
-      class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mb-2"
+      class="sidebar-link"
     >
-      <i class="bi bi-people-fill me-2"></i> Painel Admin
+      <i class="bi bi-people-fill icon"></i> <span>Painel Admin</span>
     </a>
 
-    <a
-      (click)="logout()"
-      style="cursor: pointer"
-      class="list-group-item list-group-item-action bg-primary text-white border-0 rounded-3 mt-5 text-warning"
-    >
-      <i class="bi bi-door-open-fill me-2"></i> Sair
-    </a>
+    <div class="mt-auto pt-4">
+      <a (click)="logout()" class="sidebar-link logout-link">
+        <i class="bi bi-door-open-fill icon text-warning"></i>
+        <span class="text-warning">Sair</span>
+      </a>
+    </div>
   </div>
 </div>
 
+<!-- MENU MOBILE (LAYOUT ANTERIOR COM CORES FUTURISTAS) -->
 <nav class="navigation d-flex d-md-none" *ngIf="session$ | async as session">
   <ul>
-    <li class="list" [class.active]="router.url === '/dashboard'">
+    <li class="list" [class.active]="router.url.includes('/dashboard')">
       <a routerLink="/dashboard">
         <span class="icon"><i class="bi bi-grid-1x2-fill"></i></span>
-        <span class="text">Dashboard</span>
+        <span class="text">Painel</span>
       </a>
     </li>
 
-    <li class="list" [class.active]="router.url === '/sensores-iot'">
+    <li class="list" [class.active]="router.url.includes('/sensores-iot')">
       <a routerLink="/sensores-iot">
         <span class="icon"><i class="bi bi-cpu-fill"></i></span>
         <span class="text">Sensores</span>
       </a>
     </li>
 
-    <li
-      class="list"
-      [class.active]="router.url === '/admin-panel'"
-      *ngIf="session.role === 'admin'"
-    >
+    <li class="list" [class.active]="router.url.includes('/admin-panel')" *ngIf="session.role === 'admin'">
       <a routerLink="/admin-panel">
         <span class="icon"><i class="bi bi-people-fill"></i></span>
         <span class="text">Admin</span>
       </a>
     </li>
 
-    <div class="indicator" [style.transform]="getIndicatorTransform(session.role ?? '')"></div>
+    <li class="list sair-btn">
+      <a (click)="logout()" style="cursor: pointer">
+        <span class="icon"><i class="bi bi-door-open-fill"></i></span>
+        <span class="text">Sair</span>
+      </a>
+    </li>
+
+    <div class="indicator" [style.left]="getIndicatorLeft(session.role ?? '')"></div>
   </ul>
 </nav>

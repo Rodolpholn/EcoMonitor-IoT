@@ -16,14 +16,17 @@
   </div>
 
   <div class="side-form">
-    <div class="form-box">
-      <div class="logo-mobile mb-4 d-md-none text-center">
-        <i class="bi bi-cpu-fill text-primary" style="font-size: 2.5rem"></i>
-        <h3 class="text-primary fw-bold mt-1">EcoMonitor</h3>
-      </div>
+    <div class="logo-mobile mb-5 d-md-none text-center">
+      <img
+        src="LogoThermofrio.png"
+        alt="Thermofrio Logo"
+        style="width: 100%; max-width: 220px; height: auto; object-fit: contain"
+      />
+    </div>
 
-      <h1>Bem-vindo</h1>
-      <p class="subtitle">Entre com suas credenciais para continuar</p>
+    <div class="form-box">
+      <h1 class="text-center">Bem-vindo</h1>
+      <p class="subtitle text-center">Entre com suas credenciais</p>
 
       <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>

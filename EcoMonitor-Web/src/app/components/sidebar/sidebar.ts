@@ -23,18 +23,23 @@ export class Sidebar {
     await this.authService.logout();
   }
 
-  getIndicatorTransform(role: string): string {
+  getIndicatorLeft(role: string): string {
     const url = this.router.url;
     const isAdmin = role === 'admin';
+    const totalItems = isAdmin ? 4 : 3;
+    let activeIndex = 0;
 
-    if (url === '/dashboard') {
-      return 'translateX(0px)';
-    } else if (url === '/sensores-iot') {
-      return isAdmin ? 'translateX(calc(33.33vw - 5px))' : 'translateX(calc(50vw - 5px))';
-    } else if (url === '/admin-panel' && isAdmin) {
-      return 'translateX(calc(66.66vw - 5px))';
+    if (url.includes('/dashboard')) {
+      activeIndex = 0;
+    } else if (url.includes('/sensores-iot')) {
+      activeIndex = 1;
+    } else if (url.includes('/admin-panel') && isAdmin) {
+      activeIndex = 2;
     }
 
-    return 'translateX(0px)';
+    const itemWidth = 100 / totalItems;
+    const centerPosition = (itemWidth * activeIndex) + (itemWidth / 2);
+
+    return `calc(${centerPosition}% - 35px)`;
   }
 }

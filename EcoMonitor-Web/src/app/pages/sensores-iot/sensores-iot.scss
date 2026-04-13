@@ -13,6 +13,11 @@
   }
   scrollbar-width: none;
 
+  @media (max-width: 767.98px) {
+    height: calc(100vh - 140px); // Libera o espaço base para não esconder nada atrás do menu mobile flutuante
+    touch-action: none; // Evita conflito do toque com comportamentos nativos (como pull-to-refresh)
+  }
+
   // Alerta de Status Moderno (Online / Offline)
   .system-status-badge {
     position: absolute;

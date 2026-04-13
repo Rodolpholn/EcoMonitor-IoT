@@ -2,39 +2,64 @@
   padding: 1.5rem;
   max-width: 860px;
   margin: 0 auto;
+  color: #e2e8f0; // Cor base futurista (cinza tech claro)
+
+  // Forçando as tipografias do Bootstrap a respeitarem o painel escuro
+  .text-muted { color: #94a3b8 !important; }
 }
 
 // ── Cabeçalho ──────────────────────────────────────────────
 .admin-header {
-  background: linear-gradient(135deg, #0d6efd 0%, #4facfe 100%);
+  background: linear-gradient(135deg, #091020 0%, #0b1a3a 100%);
+  border: 1px solid rgba(13, 110, 253, 0.2);
   border-radius: 16px;
   padding: 1.5rem 2rem;
   color: white;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 20px rgba(13, 110, 253, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(13, 110, 253, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
 }
 
 .admin-icon-box {
   width: 52px;
   height: 52px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(13, 110, 253, 0.15);
+  border: 1px solid rgba(13, 110, 253, 0.3);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  color: #0d6efd;
   flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(13, 110, 253, 0.2);
 }
+
 
 // ── Abas ───────────────────────────────────────────────────
 .admin-tabs {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  background: white;
+  background: rgba(9, 16, 32, 0.85); // Vidro Fumê
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 0.4rem;
   border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .tab-btn {
@@ -45,22 +70,24 @@
   border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 500;
-  color: #6c757d;
+  color: #94a3b8;
   cursor: pointer;
   transition:
+    all 0.3s ease,
     background 0.2s,
     color 0.2s;
 
   &:hover {
-    background: #f0f4ff;
-    color: #0d6efd;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
   }
 
   &.active {
-    background: #0d6efd;
+    background: linear-gradient(90deg, rgba(13, 110, 253, 0.3) 0%, rgba(13, 110, 253, 0.1) 100%);
+    border: 1px solid rgba(13, 110, 253, 0.4);
     color: white;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+    box-shadow: inset 4px 0 0 #0d6efd;
   }
 }
 
@@ -81,10 +108,13 @@
 }
 
 .content-card {
-  background: white;
+  background: rgba(9, 16, 32, 0.85); // Vidro Fumê
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 1.75rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .content-card-header {
@@ -92,9 +122,9 @@
   align-items: center;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #ffffff;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f4ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 // ── Seletor de Role ────────────────────────────────────────
@@ -122,7 +152,8 @@
   align-items: center;
   gap: 0.35rem;
   padding: 1.25rem 1rem;
-  border: 2px solid #e9ecef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 14px;
   text-align: center;
   transition:
@@ -137,19 +168,19 @@
   .role-name {
     font-weight: 700;
     font-size: 0.9rem;
-    color: #1a1a2e;
+    color: #ffffff;
   }
 
   .role-desc {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: #94a3b8;
   }
 }
 
 .role-option.selected .role-card {
   border-color: #0d6efd;
-  background: #f0f4ff;
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+  background: rgba(13, 110, 253, 0.1);
+  box-shadow: 0 0 15px rgba(13, 110, 253, 0.2), inset 0 0 0 1px #0d6efd;
 }
 
 // ── Botão Criar ────────────────────────────────────────────
@@ -175,7 +206,7 @@
   gap: 1rem;
   align-items: flex-start;
   padding: 1rem 1.25rem;
-  background: #f8f9ff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   border-left: 4px solid #0d6efd;
 }
@@ -198,14 +229,14 @@
   h6 {
     font-weight: 700;
     margin-bottom: 0.25rem;
-    color: #1a1a2e;
+    color: #ffffff;
     font-size: 0.9rem;
   }
 
   p {
     margin: 0;
     font-size: 0.85rem;
-    color: #6c757d;
+    color: #94a3b8;
     line-height: 1.5;
   }
 }
@@ -214,18 +245,18 @@
 .permission-table {
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #e9ecef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .perm-header {
   display: grid;
   grid-template-columns: 1fr 120px 120px;
-  background: #f0f4ff;
+  background: rgba(0, 0, 0, 0.3);
   padding: 0.75rem 1rem;
   font-weight: 700;
   font-size: 0.85rem;
-  color: #1a1a2e;
-  border-bottom: 2px solid #dee2e6;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .perm-row {
@@ -233,8 +264,8 @@
   grid-template-columns: 1fr 120px 120px;
   padding: 0.7rem 1rem;
   font-size: 0.88rem;
-  color: #495057;
-  border-bottom: 1px solid #f0f0f0;
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background 0.15s;
 
   &:last-child {
@@ -242,10 +273,84 @@
   }
 
   &:hover {
-    background: #fafbff;
+    background: rgba(255, 255, 255, 0.03);
   }
 
   i {
     font-size: 1rem;
   }
+}
+
+// ── Overrides Avançados (Inputs, Tabelas e Alertas) ─────────
+.form-control {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+
+  &:focus {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: #0d6efd;
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+  }
+
+  &::placeholder {
+    color: #64748b;
+  }
+}
+
+.form-label {
+  color: #cbd5e1;
+}
+
+.form-text {
+  color: #94a3b8;
+}
+
+.table {
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.05);
+
+  & > :not(caption) > * > * {
+    background-color: transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.table-light th {
+  background: rgba(0, 0, 0, 0.3) !important;
+  color: #94a3b8 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.table-hover tbody tr:hover > * {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+// Badges & Caixas de Alerta Glass
+.bg-warning-subtle { background-color: rgba(255, 193, 7, 0.15) !important; }
+.text-warning-emphasis { color: #ffc107 !important; }
+.border-warning { border-color: rgba(255, 193, 7, 0.4) !important; }
+
+.bg-info-subtle { background-color: rgba(13, 202, 240, 0.15) !important; }
+.text-info-emphasis { color: #0dcaf0 !important; }
+.border-info { border-color: rgba(13, 202, 240, 0.4) !important; }
+
+.alert {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  &.alert-success { border-color: #198754; color: #75b798; }
+  &.alert-danger { border-color: #dc3545; color: #ea868f; }
+}
+
+.warning-glass-box {
+  background: rgba(255, 193, 7, 0.05);
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+  color: #ffc107;
+}
+
+.tech-hr {
+  border-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
 }
