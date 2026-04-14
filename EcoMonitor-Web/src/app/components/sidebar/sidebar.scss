@@ -180,7 +180,6 @@
       transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); // Animação mais suave
       box-shadow: inset 0 2px 10px rgba(255, 255, 255, 0.2), 0 4px 15px rgba(13, 110, 253, 0.4);
       z-index: 5;
-      // left é removido daqui, pois o Angular agora injeta a porcentagem exata dependendo da aba ativa
 
       &::before {
         content: '';

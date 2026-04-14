@@ -32,7 +32,7 @@ namespace EcoMonitor.Api.Controllers
                 if (planta == null) 
                     return Ok(new { Id = 1, ImagemUrl = "" });
 
-                // Retornar objeto anônimo para evitar erro de serialização com propriedades do BaseModel
+                // Retorna apenas o ID e a URL da imagem para o frontend
                 return Ok(new { Id = planta.Id, ImagemUrl = planta.ImagemUrl });
             }
             catch (Exception ex)
@@ -50,7 +50,7 @@ namespace EcoMonitor.Api.Controllers
             {
                 if (planta == null || string.IsNullOrEmpty(planta.ImagemUrl)) 
                 {
-                    // Se o payload vier vazio (Remover Planta), garantimos que o ID 1 seja limpo
+                    // Se a planta for nula ou a URL da imagem estiver vazia, cria um novo registro com ID 1 e URL vazia
                     planta = new PlantaModel { Id = 1, ImagemUrl = "" };
                 }
 

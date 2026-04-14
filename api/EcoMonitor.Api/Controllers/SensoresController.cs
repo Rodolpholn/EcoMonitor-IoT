@@ -7,6 +7,7 @@ using System;
 using System.Linq; 
 using Postgrest.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 
 namespace EcoMonitor.Api.Controllers
 {
@@ -16,11 +17,12 @@ namespace EcoMonitor.Api.Controllers
     public class SensoresController : ControllerBase
     {
         private readonly Supabase.Client _supabaseClient;
-        private const string IOT_API_KEY = "Thermofrio_Seguranca_Maxima_2026_@#";
+        private readonly IConfiguration _configuration;
 
-        public SensoresController(Supabase.Client supabaseClient)
+        public SensoresController(Supabase.Client supabaseClient, IConfiguration configuration)
         {
             _supabaseClient = supabaseClient;
+            _configuration = configuration;
         }
 
         // GET: api/Sensores
@@ -273,7 +275,8 @@ namespace EcoMonitor.Api.Controllers
             {
                 if (User.Identity?.IsAuthenticated != true)
                 {
-                    if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != IOT_API_KEY)
+                    var expectedApiKey = _configuration["IotApiKey"];
+                    if (!Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != expectedApiKey)
                     {
                         return Unauthorized(new { mensagem = "Acesso negado: API Key inválida ou Token ausente." });
                     }

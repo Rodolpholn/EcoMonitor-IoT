@@ -31,8 +31,7 @@ export class Login {
       this.isLoading = false;
       this.errorMessage = 'Erro no login: ' + error.message;
     } else {
-      // O login foi concluído com sucesso, mas damos um pequeno delay (meio segundo)
-      // para garantir que o Supabase atualizou o token no navegador e o Interceptor já consegue lê-lo.
+      // Simula um pequeno delay para mostrar o loading (pode ser removido em produção)
       setTimeout(() => {
         this.isLoading = false;
         this.router.navigate(['/dashboard']);

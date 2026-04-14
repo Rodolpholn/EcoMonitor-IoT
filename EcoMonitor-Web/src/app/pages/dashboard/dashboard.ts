@@ -59,15 +59,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   carregarDados() {
     this.sensorService.getLeituras().subscribe({
       next: (dados) => {
-        this.isOnline = true; // Se a requisição respondeu, a API está online
+        this.isOnline = true; // Assume online se a requisição foi bem-sucedida
         if (dados && dados.length > 0) {
-          // 1. Normalização Robusta: Converte para objeto Date imediatamente
+        // 1. Normalização de Datas (para garantir consistência, independente do formato vindo do backend)
           const dadosNormalizados = dados.map((item: any) => {
             let rawDate = item.updated_at || item.updatedAt || item.UpdatedAt || item.created_at;
             let dateObj: Date;
 
             if (typeof rawDate === 'string') {
-              // Substitui espaço por T para garantir compatibilidade ISO (Postgres -> JS)
+              // Substitui o espaço por 'T' para garantir que o formato seja reconhecido como ISO 8601
               dateObj = new Date(rawDate.replace(' ', 'T'));
             } else {
               dateObj = new Date(rawDate);
@@ -234,7 +234,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   renderizarGrafico() {
     if (!this.canvas || this.historicoGrafico.length === 0) return;
 
-    // Criamos as labels formatadas como string para o Eixo X
+    // Prepara os dados para o gráfico, garantindo que as datas sejam formatadas corretamente
     const labels = this.historicoGrafico.map((item) => {
       const d = item.safeDate;
       return d instanceof Date && !isNaN(d.getTime())
@@ -279,7 +279,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             intersect: false,
             callbacks: {
               title: (tooltipItems: any) => {
-                // Aqui pegamos a label que já formatamos lá em cima
+                // Exibe a data/hora completa no tooltip
                 return 'Hora da Captura: ' + tooltipItems[0].label;
               },
               label: (context: any) => {

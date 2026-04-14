@@ -43,7 +43,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
 });
 
-// 5. CORS - AJUSTE PARA ELIMINAR O ERRO DO CONSOLE
+// 5. CORS (Ajustado para permitir apenas o domínio do frontend hospedado)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -59,7 +59,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Importante: PropertyNamingPolicy = null mantém os nomes das propriedades como estão no C#
+        // Mantém os nomes das propriedades exatamente como estão no modelo C# (sem camelCase)
         options.JsonSerializerOptions.PropertyNamingPolicy = null; 
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
@@ -70,10 +70,10 @@ var app = builder.Build();
 
 // --- ORDEM DOS MIDDLEWARES (CRÍTICO) ---
 
-// 1. CORS deve ser a PRIMEIRA coisa para evitar erro no pre-flight do navegador
+// 1. CORS SEMPRE antes de Autenticação/Autorização
 app.UseCors("AllowAll");
 
-// 2. Middleware para Railway/HTTPS (ajusta o esquema para não dar erro de segurança)
+// 2. Middleware para corrigir o esquema (http/https) quando atrás de um proxy reverso
 app.Use((context, next) =>
 {
     if (context.Request.Headers.ContainsKey("X-Forwarded-Proto"))
