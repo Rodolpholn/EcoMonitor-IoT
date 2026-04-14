@@ -48,7 +48,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://thermofrio.vercel.app") // Permite explicitamente o seu Angular local
+        // Permite o domínio principal do Vercel, links temporários de preview e o seu ambiente local
+        policy.SetIsOriginAllowed(origin => 
+                  origin.EndsWith(".vercel.app") || 
+                  origin == "http://localhost:4200")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials(); // Necessário para enviar tokens/sessão
